@@ -1,0 +1,19 @@
+kind: Pod
+apiVersion: v1
+metadata:
+  name: my-csi-app-inline-volume
+spec:
+  containers:
+  - name: my-frontend
+    image: busybox
+    command: [ "sleep", "1000" ]
+    volumeMounts:
+    - mountPath: "/data"
+      name: my-csi-volume
+  volumes:
+  - name: my-csi-volume
+    csi:
+      driver: csi-powerstore.dellemc.com
+      fsType: "xfs"
+      volumeAttributes:
+        size: "2Gi"
