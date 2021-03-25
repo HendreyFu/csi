@@ -1,0 +1,806 @@
+====VSI
+issue,
+vsi web can't login after init..
+
+172.18.0.2 - - [21/Mar/2021:05:41:26 +0000] "GET /api/ui/htmlClientSdk.js HTTP/1.0" 404 555 "https://192.168.1.19/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36" "192.168.240.8"
+172.18.0.2 - - [21/Mar/2021:05:41:26 +0000] "GET /polyfills-es2015.276e6d88c5582a8066d9.js HTTP/1.0" 200 68592 "https://192.168.1.19/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36" "192.168.240.8"
+2021/03/21 05:41:26 [error] 22#22: *1 open() "/usr/share/nginx/html/api/ui/htmlClientSdk.js" failed (2: No such file or directory), client: 172.18.0.2, server: localhost, request: "GET /api/ui/htmlClientSdk.js HTTP/1.0", host: "192.168.1.19", referrer: "https://192.168.1.19/"
+172.18.0.2 - - [21/Mar/2021:05:41:26 +0000] "GET /styles.21dd68fec88ebe09b9f5.css HTTP/1.0" 200 534996 "https://192.168.1.19/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36" "192.168.240.8"
+172.18.0.2 - - [21/Mar/2021:05:41:26 +0000] "GET /runtime-es2015.6ce2d5635f6beb0d662a.js HTTP/1.0" 200 2289 "https://192.168.1.19/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36" "192.168.240.8"
+172.18.0.2 - - [21/Mar/2021:05:41:26 +0000] "GET /main-es2015.eabee8b3bc1f1d6df081.js HTTP/1.0" 200 3304819 "https://192.168.1.19/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36" "192.168.240.8"
+172.18.0.2 - - [21/Mar/2021:05:41:27 +0000] "GET /assets/images/vsi-icons/icon-vsi.png HTTP/1.0" 200 2217 "https://192.168.1.19/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36" "192.168.240.8"
+
+
+====CSI 03/21/2021
+Centos 8.3
+Note:
+Kubernetes cannot work with Podman (which is now the default container engine for both RHEL and CentOS).
+youll need to install the docker engine. 
+
+[root@master ~]# cat /etc/centos-release
+CentOS Linux release 8.3.2011
+[root@master ~]# uname -a
+Linux master 4.18.0-240.el8.x86_64 #1 SMP Fri Sep 25 19:48:47 UTC 2020 x86_64 x86_64 x86_64 GNU/Linux
+
+...
+...
+[root@master ~]# modprobe br_netfilter
+[root@master ~]# lsmod |grep -i netfilter
+br_netfilter           24576  0
+bridge                192512  1 br_netfilter
+[root@master ~]# cat > /etc/sysctl.d/k8s.conf <<EOF
+> net.bridge.bridge-nf-call-ip6tables = 1
+> net.bridge.bridge-nf-call-iptables = 1
+> net.ipv4.ip_forward = 1
+> EOF
+[root@master ~]# sysctl -p /etc/sysctl.d/k8s.conf
+net.bridge.bridge-nf-call-ip6tables = 1
+net.bridge.bridge-nf-call-iptables = 1
+net.ipv4.ip_forward = 1
+[root@master ~]# for i in {node1,node2,node3}; do ssh $i modprobe br_netfilter ; scp /etc/sysctl.d/k8s.conf $i:/etc/sysctl.d/k8s.conf; ssh $i sysctl -p /etc/sysctl.d/k8s.conf ; done
+[root@master ~]# for i in {master,node1,node2,node3}; do ssh $i systemctl disable firewalld ;  ssh $i systemctl stop firewalld ; done
+
+
+[root@master ~]# for i in {master,node1,node2,node3}; do ssh $i yum module install -y container-tools:2.0  ; done
+[root@master ~]# grep -v "^#\|^$" /etc/containers/registries.conf
+[registries.search]
+registries = ['registry.access.redhat.com', 'registry.redhat.io', 'docker.io']
+[registries.insecure]
+registries = []
+[registries.block]
+registries = []
+[root@master ~]# podman -v
+podman version 1.6.4
+[root@master ~]# podman info
+host:
+  BuildahVersion: 1.12.0-dev
+  CgroupVersion: v1
+  Conmon:
+    package: conmon-2.0.15-1.module_el8.3.0+479+69e2ae26.x86_64
+    path: /usr/bin/conmon
+    version: 'conmon version 2.0.15, commit: 0198f57f29209da30f765318dda9328bac6a5e07'
+  Distribution:
+    distribution: '"centos"'
+    version: "8"
+  MemFree: 6980251648
+  MemTotal: 8144797696
+  OCIRuntime:
+    name: runc
+    package: runc-1.0.0-64.rc10.module_el8.3.0+479+69e2ae26.x86_64
+    path: /usr/bin/runc
+    version: 'runc version spec: 1.0.1-dev'
+  SwapFree: 0
+  SwapTotal: 0
+  arch: amd64
+  cpus: 2
+  eventlogger: journald
+  hostname: master
+  kernel: 4.18.0-240.el8.x86_64
+  os: linux
+  rootless: false
+  uptime: 2h 13m 16.45s (Approximately 0.08 days)
+registries:
+  blocked: null
+  insecure: null
+  search:
+  - registry.access.redhat.com
+  - registry.redhat.io
+  - docker.io
+store:
+  ConfigFile: /etc/containers/storage.conf
+  ContainerStore:
+    number: 0
+  GraphDriverName: overlay
+  GraphOptions: {}
+  GraphRoot: /var/lib/containers/storage
+  GraphStatus:
+    Backing Filesystem: xfs
+    Native Overlay Diff: "true"
+    Supports d_type: "true"
+    Using metacopy: "false"
+  ImageStore:
+    number: 0
+  RunRoot: /var/run/containers/storage
+  VolumePath: /var/lib/containers/storage/volumes
+
+[root@master ~]# for i in {master,node1,node2,node3}; do ssh $i podman pull dellemc/csi-powerstore && podman images ; done
+[root@master ~]# podman inspect docker.io/dellemc/csi-powerstore:latest | grep -i "version\|release"
+                "release": "291",
+                "version": "1.3.0"
+        "Version": "",
+            "release": "291",
+            "version": "1.3.0"
+
+[root@master ~]# for i in {master,node1,node2,node3}; do ssh $i yum install -y kubelet kubeadm kubectl --disableexcludes=kubernetes ; done
+
+
+  128  for i in {master,node1,node2,node3}; do ssh $i podman rmi dellemc/csi-powerstore && podman images ; done
+  129  for i in {master,node1,node2,node3}; do ssh $i yum module remove -y container-tools:2.0  ; done
+
+[root@master ~]# cat /tmp/config.sh
+#/bin/bash
+for i in {node1,node2,node3}; do scp /etc/yum.repos.d/kubernetes.repo $i:/etc/yum.repos.d/kubernetes.repo ; ssh $i yum repolist ; done
+for i in {master,node1,node2,node3}; do ssh $i setenforce 0 ; ssh $i sed -i 's/^SELINUX=enforcing$/SELINUX=permissive/' /etc/selinux/config ; ssh $i getenforce ; done
+for i in {master,node1,node2,node3}; do ssh $i systemctl disable firewalld.service; ssh $i systemctl stop firewalld.service ; done
+for i in {master,node1,node2,node3}; do ssh $i yum install -y yum-utils device-mapper-persistent-data lvm2 bash-completion git vim net-tools ; done
+for i in {master,node1,node2,node3}; do ssh $i yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo ; done
+for i in {master,node1,node2,node3}; do ssh $i yum -y install docker-ce ; done
+for i in {master,node1,node2,node3}; do ssh $i systemctl enable docker ; ssh $i systemctl start docker ; ssh $i systemctl status docker ; ssh $i docker version; done
+for i in {master,node1,node2,node3}; do ssh $i docker --version ; done
+for i in {master,node1,node2,node3}; do ssh $i docker pull dellemc/csi-powerstore:v1.3.0 ; ssh $i docker images ; done
+for i in {master,node1,node2,node3}; do ssh $i docker images ; done
+for i in {master,node1,node2,node3}; do ssh $i yum install -y kubelet kubeadm kubectl --disableexcludes=kubernetes ; done
+[root@master ~]# chmod +x /tmp/config.sh
+[root@master ~]# /tmp/config.sh
+
+[root@master ~]# kubeadm config images pull
+[config/images] Pulled k8s.gcr.io/kube-apiserver:v1.20.5
+[config/images] Pulled k8s.gcr.io/kube-controller-manager:v1.20.5
+[config/images] Pulled k8s.gcr.io/kube-scheduler:v1.20.5
+[config/images] Pulled k8s.gcr.io/kube-proxy:v1.20.5
+[config/images] Pulled k8s.gcr.io/pause:3.2
+[config/images] Pulled k8s.gcr.io/etcd:3.4.13-0
+[config/images] Pulled k8s.gcr.io/coredns:1.7.0
+[root@master ~]# docker images
+REPOSITORY                           TAG        IMAGE ID       CREATED         SIZE
+k8s.gcr.io/kube-proxy                v1.20.5    5384b1650507   6 days ago      118MB
+k8s.gcr.io/kube-apiserver            v1.20.5    d7e24aeb3b10   6 days ago      122MB
+k8s.gcr.io/kube-controller-manager   v1.20.5    6f0c3da8c99e   6 days ago      116MB
+k8s.gcr.io/kube-scheduler            v1.20.5    8d13f1db8bfb   6 days ago      47.3MB
+k8s.gcr.io/etcd                      3.4.13-0   0369cf4303ff   6 months ago    253MB
+k8s.gcr.io/coredns                   1.7.0      bfe3a36ebd25   9 months ago    45.2MB
+k8s.gcr.io/pause                     3.2        80d28bedfe5d   13 months ago   683kB
+[root@master ~]#
+
+  138  kubeadm init --pod-network-cidr=10.244.0.0/16 --apiserver-advertise-address=192.168.1.20
+  139  for i in {node1,node2,node3}; do ssh $i kubeadm join 192.168.1.20:6443 --token tkmf3y.x3rzt3m6rtxhwc02 --discovery-token-ca-cert-hash sha256:9823a831616f82a964ae1116b6c6dfeac5c83e865a7205230adc8a0828e18fb8 ; done
+  140  systemctl status kubelet
+  141  netstat -ntpl
+  142  kubectl get nodes
+  143  kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/2140ac876ef134e0ed5af15c65e414cf26827915/Documentation/kube-flannel.yml
+  144  echo "export KUBECONFIG=/etc/kubernetes/admin.conf" >> ~/.bash_profile
+  145  echo "source <(kubectl completion bash)" >> ~/.bash_profile
+  146  source ~/.bash_profile
+  147  kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/2140ac876ef134e0ed5af15c65e414cf26827915/Documentation/kube-flannel.yml
+  148  kubectl get cs
+  149  vi ~/.vimrc
+  150  vim /etc/kubernetes/manifests/kube-controller-manager.yaml
+  151  vim /etc/kubernetes/manifests/kube-scheduler.yaml
+  152  kubectl get cs
+  153  kubectl cluster-info
+  154  kubectl get nodes
+[root@master ~]# kubectl get nodes
+NAME     STATUS   ROLES                  AGE     VERSION
+master   Ready    control-plane,master   11m     v1.20.5
+node1    Ready    <none>                 9m2s    v1.20.5
+node2    Ready    <none>                 8m53s   v1.20.5
+node3    Ready    <none>                 8m44s   v1.20.5
+[root@master ~]# kubectl get pods -A
+NAMESPACE     NAME                             READY   STATUS    RESTARTS   AGE
+kube-system   coredns-74ff55c5b-hj952          1/1     Running   1          26m
+kube-system   coredns-74ff55c5b-qfg5p          1/1     Running   1          26m
+kube-system   etcd-master                      1/1     Running   1          26m
+kube-system   kube-apiserver-master            1/1     Running   1          26m
+kube-system   kube-controller-manager-master   1/1     Running   1          17m
+kube-system   kube-flannel-ds-amd64-5lgwk      1/1     Running   1          21m
+kube-system   kube-flannel-ds-amd64-fvtgw      1/1     Running   1          21m
+kube-system   kube-flannel-ds-amd64-hcgth      1/1     Running   1          21m
+kube-system   kube-flannel-ds-amd64-rgmkv      1/1     Running   1          21m
+kube-system   kube-proxy-kc7dp                 1/1     Running   1          24m
+kube-system   kube-proxy-nwm98                 1/1     Running   1          24m
+kube-system   kube-proxy-vl27z                 1/1     Running   1          24m
+kube-system   kube-proxy-xmlqj                 1/1     Running   1          26m
+kube-system   kube-scheduler-master            1/1     Running   1          17m
+
+
+
+Procedure
+Run git clone https://github.com/dell/csi-powerstore.git to clone the git repository
+...
+...
+[root@master dell-csi-helm-installer]# kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/v4.0.0/client/config/crd/snapshot.storage.k8s.io_volumesnapshots.yaml
+customresourcedefinition.apiextensions.k8s.io/volumesnapshots.snapshot.storage.k8s.io created
+[root@master dell-csi-helm-installer]# kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/v4.0.0/client/config/crd/snapshot.storage.k8s.io_volumesnapshotclasses.yaml
+customresourcedefinition.apiextensions.k8s.io/volumesnapshotclasses.snapshot.storage.k8s.io created
+[root@master dell-csi-helm-installer]# kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/v4.0.0/client/config/crd/snapshot.storage.k8s.io_volumesnapshotcontents.yaml
+customresourcedefinition.apiextensions.k8s.io/volumesnapshotcontents.snapshot.storage.k8s.io created
+[root@master dell-csi-helm-installer]# kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/v4.0.0/deploy/kubernetes/snapshot-controller/rbac-snapshot-controller.yaml
+serviceaccount/snapshot-controller created
+clusterrole.rbac.authorization.k8s.io/snapshot-controller-runner created
+clusterrolebinding.rbac.authorization.k8s.io/snapshot-controller-role created
+role.rbac.authorization.k8s.io/snapshot-controller-leaderelection created
+rolebinding.rbac.authorization.k8s.io/snapshot-controller-leaderelection created
+[root@master dell-csi-helm-installer]# kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/v4.0.0/deploy/kubernetes/snapshot-controller/setup-snapshot-controller.yaml
+statefulset.apps/snapshot-controller created
+
+[root@master dell-csi-helm-installer]# kubectl get all --all-namespaces
+NAMESPACE     NAME                                 READY   STATUS    RESTARTS   AGE
+default       pod/snapshot-controller-0            1/1     Running   0          52s
+kube-system   pod/coredns-74ff55c5b-8hbq8          0/1     Running   0          99m
+kube-system   pod/coredns-74ff55c5b-msrrz          0/1     Running   0          99m
+kube-system   pod/etcd-master                      1/1     Running   0          99m
+kube-system   pod/kube-apiserver-master            1/1     Running   0          99m
+kube-system   pod/kube-controller-manager-master   1/1     Running   0          90m
+kube-system   pod/kube-flannel-ds-amd64-b6vd7      1/1     Running   0          94m
+kube-system   pod/kube-flannel-ds-amd64-dws65      1/1     Running   0          94m
+kube-system   pod/kube-flannel-ds-amd64-tqqnj      1/1     Running   0          94m
+kube-system   pod/kube-flannel-ds-amd64-xtcjv      1/1     Running   0          94m
+kube-system   pod/kube-proxy-5lbwp                 1/1     Running   0          98m
+kube-system   pod/kube-proxy-b5n8s                 1/1     Running   0          97m
+kube-system   pod/kube-proxy-c6jzr                 1/1     Running   0          98m
+kube-system   pod/kube-proxy-r7kxj                 1/1     Running   0          99m
+kube-system   pod/kube-scheduler-master            1/1     Running   0          90m
+
+NAMESPACE     NAME                 TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)                  AGE
+default       service/kubernetes   ClusterIP   10.96.0.1    <none>        443/TCP                  99m
+kube-system   service/kube-dns     ClusterIP   10.96.0.10   <none>        53/UDP,53/TCP,9153/TCP   99m
+
+NAMESPACE     NAME                                     DESIRED   CURRENT   READY   UP-TO-DATE   AVAILABLE   NODE SELECTOR            AGE
+kube-system   daemonset.apps/kube-flannel-ds-amd64     4         4         4       4            4           <none>                   94m
+kube-system   daemonset.apps/kube-flannel-ds-arm       0         0         0       0            0           <none>                   94m
+kube-system   daemonset.apps/kube-flannel-ds-arm64     0         0         0       0            0           <none>                   94m
+kube-system   daemonset.apps/kube-flannel-ds-ppc64le   0         0         0       0            0           <none>                   94m
+kube-system   daemonset.apps/kube-flannel-ds-s390x     0         0         0       0            0           <none>                   94m
+kube-system   daemonset.apps/kube-proxy                4         4         4       4            4           kubernetes.io/os=linux   99m
+
+NAMESPACE     NAME                      READY   UP-TO-DATE   AVAILABLE   AGE
+kube-system   deployment.apps/coredns   0/2     2            0           99m
+
+NAMESPACE     NAME                                DESIRED   CURRENT   READY   AGE
+kube-system   replicaset.apps/coredns-74ff55c5b   2         2         0       99m
+
+NAMESPACE   NAME                                   READY   AGE
+default     statefulset.apps/snapshot-controller   1/1     52s
+[root@master csi-powerstore]# kubectl logs snapshot-controller-0 -n default
+I0324 11:43:42.898334       1 main.go:71] Version: v4.0.0
+I0324 11:43:42.900077       1 main.go:120] Start NewCSISnapshotController with kubeconfig [] resyncPeriod [15m0s]
+I0324 11:43:42.900962       1 reflector.go:219] Starting reflector *v1.VolumeSnapshot (15m0s) from github.com/kubernetes-csi/external-snapshotter/client/v4/informers/externalversions/factory.go:117
+I0324 11:43:42.900980       1 reflector.go:255] Listing and watching *v1.VolumeSnapshot from github.com/kubernetes-csi/external-snapshotter/client/v4/informers/externalversions/factory.go:117
+I0324 11:43:42.901651       1 reflector.go:219] Starting reflector *v1.VolumeSnapshotClass (15m0s) from github.com/kubernetes-csi/external-snapshotter/client/v4/informers/externalversions/factory.go:117
+I0324 11:43:42.901690       1 reflector.go:255] Listing and watching *v1.VolumeSnapshotClass from github.com/kubernetes-csi/external-snapshotter/client/v4/informers/externalversions/factory.go:117
+I0324 11:43:42.901961       1 reflector.go:219] Starting reflector *v1.VolumeSnapshotContent (15m0s) from github.com/kubernetes-csi/external-snapshotter/client/v4/informers/externalversions/factory.go:117
+I0324 11:43:42.901999       1 reflector.go:255] Listing and watching *v1.VolumeSnapshotContent from github.com/kubernetes-csi/external-snapshotter/client/v4/informers/externalversions/factory.go:117
+I0324 11:43:42.902305       1 reflector.go:219] Starting reflector *v1.PersistentVolumeClaim (15m0s) from k8s.io/client-go/informers/factory.go:134
+I0324 11:43:42.902314       1 reflector.go:255] Listing and watching *v1.PersistentVolumeClaim from k8s.io/client-go/informers/factory.go:134
+I0324 11:43:42.902533       1 snapshot_controller_base.go:133] Starting snapshot controller
+I0324 11:43:43.002825       1 shared_informer.go:270] caches populated
+I0324 11:43:43.002921       1 snapshot_controller_base.go:485] controller initialized
+[root@master csi-powerstore]#
+
+
+[root@master dell-csi-helm-installer]# ./csi-install.sh --namespace csi-powerstore --values ./my-powerstore-settings.yaml
+------------------------------------------------------
+> Installing CSI Driver: csi-powerstore on 1.20
+------------------------------------------------------
+------------------------------------------------------
+> Checking to see if CSI Driver is already installed
+------------------------------------------------------
+------------------------------------------------------
+> Verifying Kubernetes and driver configuration
+------------------------------------------------------
+|- Kubernetes Version: 1.20
+|
+|- Driver: csi-powerstore
+|
+|- Verifying Kubernetes versions
+  |
+  |--> Verifying minimum Kubernetes version                         Success
+  |
+  |--> Verifying maximum Kubernetes version                         Success
+|
+|- Verifying that required namespaces have been created             Success
+|
+|- Verifying that required secrets have been created                Success
+|
+|- Verifying alpha snapshot resources
+  |
+  |--> Verifying that alpha snapshot CRDs are not installed         Success
+|
+|- Verifying snapshot support
+  |
+  |--> Verifying that snapshot CRDs are available                   Success
+  |
+  |--> Verifying that the snapshot controller is available          Success
+|
+|- Verifying NFS installation                                       Failed
+|
+|- Verifying iSCSI installation                                     Success
+|
+|- Verifying helm version                                           Success
+
+------------------------------------------------------
+> Verification Complete - With Warnings
+------------------------------------------------------
+Warnings:
+- Either mount.nfs was not found on node: 192.168.1.21 or not able to verify
+- Either mount.nfs was not found on node: 192.168.1.22 or not able to verify
+- Either mount.nfs was not found on node: 192.168.1.23 or not able to verify
+------------------------------------------------------
+WARNING:
+Kubernetes validation failed but installation can continue.
+This may affect driver installation.
+
+Press 'y' to continue or any other key to exit: y
+|
+|- Installing Driver                                                Success
+  |
+  |--> Waiting for Deployment powerstore-controller to be ready     Success
+  |
+  |--> Waiting for DaemonSet powerstore-node to be ready            Success
+------------------------------------------------------
+> Operation complete
+------------------------------------------------------
+
+[root@master dell-csi-helm-installer]#
+[root@master dell-csi-helm-installer]# kubectl get pods
+NAME                                     READY   STATUS    RESTARTS   AGE
+powerstore-controller-7bc455d5c7-g2hlg   5/5     Running   0          11m
+powerstore-controller-7bc455d5c7-njnzn   5/5     Running   0          11m
+powerstore-controller-7bc455d5c7-w6fsl   5/5     Running   0          11m
+powerstore-node-74zc8                    2/2     Running   0          11m
+powerstore-node-7n9wp                    2/2     Running   0          11m
+powerstore-node-k24jj                    2/2     Running   0          11m
+
+[root@master dell-csi-helm-installer]# kubectl get sc
+NAME             PROVISIONER                  RECLAIMPOLICY   VOLUMEBINDINGMODE   ALLOWVOLUMEEXPANSION   AGE
+powerstore       csi-powerstore.dellemc.com   Delete          Immediate           true                   48m
+powerstore-xfs   csi-powerstore.dellemc.com   Delete          Immediate           true                   48m
+[root@master dell-csi-helm-installer]# kubectl describe pods powerstore-controller-7bc455d5c7-g2hlg |more
+Name:         powerstore-controller-7bc455d5c7-g2hlg
+Namespace:    csi-powerstore
+Priority:     0
+Node:         node1/192.168.1.21
+Start Time:   Wed, 24 Mar 2021 08:30:03 -0400
+Labels:       name=powerstore-controller
+              pod-template-hash=7bc455d5c7
+Annotations:  <none>
+Status:       Running
+IP:           10.244.1.5
+IPs:
+  IP:           10.244.1.5
+Controlled By:  ReplicaSet/powerstore-controller-7bc455d5c7
+Containers:
+  attacher:
+    Container ID:  docker://0ca8a597487abb7f937c700835e4a450603063dca1bbfba0507b34e5bcf7cf3e
+    Image:         k8s.gcr.io/sig-storage/csi-attacher:v3.1.0
+    Image ID:      docker-pullable://k8s.gcr.io/sig-storage/csi-attacher@sha256:50c3cfd458fc8e0bf3c8c521eac39172009382fc66dc5044a330d137c6ed0b09
+    Port:          <none>
+    Host Port:     <none>
+    Args:
+      --csi-address=$(ADDRESS)
+      --v=5
+      --leader-election
+      --worker-threads=130
+      --resync=10s
+      --timeout=130s
+    State:          Running
+      Started:      Wed, 24 Mar 2021 08:30:18 -0400
+    Ready:          True
+    Restart Count:  0
+    Environment:
+      ADDRESS:  /var/run/csi/csi.sock
+    Mounts:
+      /var/run/csi from socket-dir (rw)
+      /var/run/secrets/kubernetes.io/serviceaccount from powerstore-controller-token-v6rbm (ro)
+  resizer:
+    Container ID:  docker://b25f702e041cb8c7155b7a8c80e608977cf18a42f88f32c5586c26cf9adefd43
+    Image:         k8s.gcr.io/sig-storage/csi-resizer:v1.1.0
+    Image ID:      docker-pullable://k8s.gcr.io/sig-storage/csi-resizer@sha256:7a5ba58a44e0d749e0767e4e37315bcf6a61f33ce3185c1991848af4db0fb70a
+    Port:          <none>
+    Host Port:     <none>
+    Args:
+      --csi-address=$(ADDRESS)
+      --v=5
+      --leader-election
+    State:          Running
+      Started:      Wed, 24 Mar 2021 08:30:37 -0400
+    Ready:          True
+    Restart Count:  0
+    Environment:
+      ADDRESS:  /var/run/csi/csi.sock
+    Mounts:
+      /var/run/csi from socket-dir (rw)
+      /var/run/secrets/kubernetes.io/serviceaccount from powerstore-controller-token-v6rbm (ro)
+  provisioner:
+    Container ID:  docker://07cfc9ed7b10b20b00b2fb75b3f045d65a3d5a90766286ea057f1fc8799a7391
+    Image:         k8s.gcr.io/sig-storage/csi-provisioner:v2.1.0
+    Image ID:      docker-pullable://k8s.gcr.io/sig-storage/csi-provisioner@sha256:20c828075d1e36f679d6a91e905b0927141eef5e15be0c9a1ca4a6a0ed9313d2
+    Port:          <none>
+    Host Port:     <none>
+    Args:
+      --csi-address=$(ADDRESS)
+      --volume-name-prefix=csi
+      --volume-name-uuid-length=10
+      --v=5
+      --leader-election
+      --default-fstype=ext4
+      --extra-create-metadata
+      --feature-gates=Topology=true
+    State:          Running
+      Started:      Wed, 24 Mar 2021 08:30:50 -0400
+    Ready:          True
+    Restart Count:  0
+    Environment:
+      ADDRESS:  /var/run/csi/csi.sock
+    Mounts:
+      /var/run/csi from socket-dir (rw)
+      /var/run/secrets/kubernetes.io/serviceaccount from powerstore-controller-token-v6rbm (ro)
+  snapshotter:
+    Container ID:  docker://3e8369e104de4009640712975be848c0630eff50ae4daf34a75b763d606b641d
+    Image:         k8s.gcr.io/sig-storage/csi-snapshotter:v4.0.0
+    Image ID:      docker-pullable://k8s.gcr.io/sig-storage/csi-snapshotter@sha256:51f2dfde5bccac7854b3704689506aeecfb793328427b91115ba253a93e60782
+    Port:          <none>
+    Host Port:     <none>
+    Args:
+      --csi-address=$(ADDRESS)
+      --v=5
+      --leader-election
+    State:          Running
+      Started:      Wed, 24 Mar 2021 08:31:07 -0400
+    Ready:          True
+    Restart Count:  0
+    Environment:
+      ADDRESS:  /var/run/csi/csi.sock
+    Mounts:
+      /var/run/csi from socket-dir (rw)
+      /var/run/secrets/kubernetes.io/serviceaccount from powerstore-controller-token-v6rbm (ro)
+  driver:
+    Container ID:  docker://6fa0a277d4a9aca1b039893d08e0bb73de74406faa1c4613d25af31414b27f20
+    Image:         dellemc/csi-powerstore:v1.3.0
+    Image ID:      docker-pullable://dellemc/csi-powerstore@sha256:120f7103e6e9ea1f31b94eec3c3fd9f3216b400095dd0140332fcab2060a01cb
+    Port:          <none>
+    Host Port:     <none>
+    Command:
+      /csi-powerstore
+    State:          Running
+      Started:      Wed, 24 Mar 2021 08:31:08 -0400
+    Ready:          True
+    Restart Count:  0
+    Environment:
+      CSI_ENDPOINT:                      /var/run/csi/csi.sock
+      X_CSI_MODE:                        controller
+      X_CSI_DEBUG:                       true
+      X_CSI_DRIVER_NAME:                 csi-powerstore.dellemc.com
+      X_CSI_POWERSTORE_EXTERNAL_ACCESS:
+      X_CSI_POWERSTORE_CONFIG_PATH:      /powerstore-config/config
+    Mounts:
+      /powerstore-config from powerstore-config (rw)
+      /var/run/csi from socket-dir (rw)
+      /var/run/secrets/kubernetes.io/serviceaccount from powerstore-controller-token-v6rbm (ro)
+Conditions:
+  Type              Status
+  Initialized       True
+  Ready             True
+  ContainersReady   True
+  PodScheduled      True
+Volumes:
+  socket-dir:
+    Type:       EmptyDir (a temporary directory that shares a pod's lifetime)
+    Medium:
+    SizeLimit:  <unset>
+  powerstore-config:
+    Type:        Secret (a volume populated by a Secret)
+    SecretName:  powerstore-config
+    Optional:    false
+  powerstore-controller-token-v6rbm:
+    Type:        Secret (a volume populated by a Secret)
+    SecretName:  powerstore-controller-token-v6rbm
+    Optional:    false
+QoS Class:       BestEffort
+Node-Selectors:  <none>
+Tolerations:     node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                 node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:
+  Type    Reason     Age   From               Message
+  ----    ------     ----  ----               -------
+  Normal  Scheduled  12m   default-scheduler  Successfully assigned csi-powerstore/powerstore-controller-7bc455d5c7-g2hlg to node1
+  Normal  Pulling    12m   kubelet            Pulling image "k8s.gcr.io/sig-storage/csi-attacher:v3.1.0"
+  Normal  Pulled     12m   kubelet            Successfully pulled image "k8s.gcr.io/sig-storage/csi-attacher:v3.1.0" in 11.8806569s
+  Normal  Created    12m   kubelet            Created container attacher
+  Normal  Started    12m   kubelet            Started container attacher
+  Normal  Pulling    12m   kubelet            Pulling image "k8s.gcr.io/sig-storage/csi-resizer:v1.1.0"
+  Normal  Pulled     12m   kubelet            Successfully pulled image "k8s.gcr.io/sig-storage/csi-resizer:v1.1.0" in 17.514903292s
+  Normal  Created    12m   kubelet            Created container resizer
+  Normal  Started    12m   kubelet            Started container resizer
+  Normal  Pulling    12m   kubelet            Pulling image "k8s.gcr.io/sig-storage/csi-provisioner:v2.1.0"
+  Normal  Pulled     12m   kubelet            Successfully pulled image "k8s.gcr.io/sig-storage/csi-provisioner:v2.1.0" in 11.993879148s
+  Normal  Created    12m   kubelet            Created container provisioner
+  Normal  Started    12m   kubelet            Started container provisioner
+  Normal  Pulling    12m   kubelet            Pulling image "k8s.gcr.io/sig-storage/csi-snapshotter:v4.0.0"
+  Normal  Pulled     11m   kubelet            Successfully pulled image "k8s.gcr.io/sig-storage/csi-snapshotter:v4.0.0" in 11.539688744s
+  Normal  Created    11m   kubelet            Created container snapshotter
+  Normal  Started    11m   kubelet            Started container snapshotter
+  Normal  Pulling    11m   kubelet            Pulling image "dellemc/csi-powerstore:v1.3.0"
+  Normal  Pulled     11m   kubelet            Successfully pulled image "dellemc/csi-powerstore:v1.3.0" in 651.463929ms
+  Normal  Created    11m   kubelet            Created container driver
+  Normal  Started    11m   kubelet            Started container driver
+[root@master dell-csi-helm-installer]#
+[root@master dell-csi-helm-installer]# kubectl describe sc powerstore
+Name:                  powerstore
+IsDefaultClass:        No
+Annotations:           <none>
+Provisioner:           csi-powerstore.dellemc.com
+Parameters:            arrayIP=192.168.1.30
+AllowVolumeExpansion:  True
+MountOptions:          <none>
+ReclaimPolicy:         Delete
+VolumeBindingMode:     Immediate
+Events:                <none>
+[root@master dell-csi-helm-installer]# kubectl describe sc powerstore-xfs
+Name:                  powerstore-xfs
+IsDefaultClass:        No
+Annotations:           <none>
+Provisioner:           csi-powerstore.dellemc.com
+Parameters:            FsType=xfs,arrayIP=192.168.1.30
+AllowVolumeExpansion:  True
+MountOptions:          <none>
+ReclaimPolicy:         Delete
+VolumeBindingMode:     Immediate
+Events:                <none>
+[root@master dell-csi-helm-installer]#
+
+[root@master tmp]# yum localinstall pstcli-1.0.0.227.x86_64.release_5H1P8.rpm
+[root@master tmp]# pstcli -d 192.168.1.30 -u admin -p P@ssw0rd! -session
+cli> host show -sort name+ -limit 3
+ #  |                  id                  |            name             |   description   | os_type | host_group.name
+----+--------------------------------------+-----------------------------+-----------------+---------+-----------------
+  1 | 37e0b151-e866-4b69-854c-0682324bdce7 | csi-node-node1-192.168.1.21 | k8s node: node1 | Linux   |
+  2 | cddbf404-e7de-41b5-8252-c5bfaebe9373 | csi-node-node2-192.168.1.22 | k8s node: node2 | Linux   |
+  3 | e1431128-bc5b-4f9e-bf15-014fef2d84d7 | csi-node-node3-192.168.1.23 | k8s node: node3 | Linux   |
+
+
+##SQL test
+for i in {node1,node2,node3}; do ssh $i docker pull mcr.microsoft.com/mssql/rhel/server:2019-latest ; ssh $i docker images ; done
+
+[root@master tmp]# kubectl create secret generic mssql --from-literal=SA_PASSWORD="P@ssw0rd!"
+secret/mssql created
+[root@master tmp]# kubectl get secrets | grep -i mssql
+mssql                               Opaque                                1      26s
+
+[root@master tmp]# mkdir sql
+[root@master tmp]# vim sql/pvc.yaml
+[root@master tmp]# kubectl create -f sql/pvc.yaml
+persistentvolumeclaim/mssql-data created
+persistentvolumeclaim/mssql-data2 created
+persistentvolumeclaim/mssql-log2 created
+[root@master tmp]# kubectl get pvc
+NAME          STATUS   VOLUME           CAPACITY   ACCESS MODES   STORAGECLASS     AGE
+mssql-data    Bound    csi-2eb515d932   10Gi       RWO            powerstore-xfs   4s
+mssql-data2   Bound    csi-88d9b52745   5Gi        RWO            powerstore-xfs   4s
+mssql-log2    Bound    csi-c8c433a697   2Gi        RWO            powerstore-xfs   4s
+[root@master tmp]# kubectl get pv
+NAME             CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                        STORAGECLASS     REASON   AGE
+csi-2eb515d932   10Gi       RWO            Delete           Bound    csi-powerstore/mssql-data    powerstore-xfs            54s
+csi-88d9b52745   5Gi        RWO            Delete           Bound    csi-powerstore/mssql-data2   powerstore-xfs            54s
+csi-c8c433a697   2Gi        RWO            Delete           Bound    csi-powerstore/mssql-log2    powerstore-xfs            54s
+[root@master tmp]# vim sql/sql.yaml
+[root@master tmp]# kubectl create -f sql/sql.yaml
+deployment.apps/mssql-deployment created
+service/mssql-deployment created
+
+[root@master tmp]# kubectl get pods
+NAME                                     READY   STATUS    RESTARTS   AGE
+mssql-deployment-5f4cd94964-bw9gt        1/1     Running   0          113m
+powerstore-controller-7bc455d5c7-g2hlg   5/5     Running   4          27h
+powerstore-controller-7bc455d5c7-njnzn   5/5     Running   1          27h
+powerstore-controller-7bc455d5c7-w6fsl   5/5     Running   3          27h
+powerstore-node-74zc8                    2/2     Running   0          27h
+powerstore-node-7n9wp                    2/2     Running   0          27h
+powerstore-node-k24jj                    2/2     Running   0          27h
+
+[root@master tmp]# kubectl logs mssql-deployment-5f4cd94964-bw9gt -f
+[root@master tmp]# kubectl get services
+NAME               TYPE       CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE
+mssql-deployment   NodePort   10.96.225.232   <none>        1433:30415/TCP   45s
+[root@master tmp]# kubectl get pods -o wide
+NAME                                     READY   STATUS    RESTARTS   AGE   IP             NODE    NOMINATED NODE   READINESS GATES
+mssql-deployment-5f4cd94964-bw9gt        1/1     Running   0          61s   10.244.2.6     node2   <none>           <none>
+powerstore-controller-7bc455d5c7-g2hlg   5/5     Running   4          25h   10.244.1.5     node1   <none>           <none>
+powerstore-controller-7bc455d5c7-njnzn   5/5     Running   1          25h   10.244.3.4     node3   <none>           <none>
+powerstore-controller-7bc455d5c7-w6fsl   5/5     Running   3          25h   10.244.2.3     node2   <none>           <none>
+powerstore-node-74zc8                    2/2     Running   0          25h   192.168.1.22   node2   <none>           <none>
+powerstore-node-7n9wp                    2/2     Running   0          25h   192.168.1.23   node3   <none>           <none>
+powerstore-node-k24jj                    2/2     Running   0          25h   192.168.1.21   node1   <none>           <none>
+[root@master tmp]# kubectl exec -it mssql-deployment-5f4cd94964-bw9gt bash
+kubectl exec [POD] [COMMAND] is DEPRECATED and will be removed in a future version. Use kubectl exec [POD] -- [COMMAND] instead.
+bash-4.4$ /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P P@ssw0rd!
+1> select @@VERSION as Version, SERVERPROPERTY('ServerName') as 'Container ID', SERVERPROPERTY('Edition') as Edition;
+2> go
+1> create database [TestDB] CONTAINMENT = NONE on primary ( NAME = N'TestDB', FILENAME = N'/var/opt/mssql/data2/TestDB.mdf', SIZE = 4GB, FILEGROWTH = 10
+2> go
+1> use TestDB
+2> CREATE TABLE Inventory (id INT, name NVARCHAR(50), quantity INT)
+3> INSERT INTO Inventory VALUES (1, 'banana', 150); INSERT INTO Inventory VALUES (2, 'orange', 154);
+4> go
+Changed database context to 'TestDB'.
+
+(1 rows affected)
+
+(1 rows affected)
+1> SELECT * FROM Inventory WHERE quantity > 152;
+2> go
+id          name                                               quantity
+----------- -------------------------------------------------- -----------
+          2 orange                                                     154
+
+(1 rows affected)
+1>exit
+
+bash-4.4$ cd /var/opt/mssql/
+bash-4.4$ ls
+data  data2  log  log2  secrets
+bash-4.4$ ls -l data2/
+total 4194308
+-rw-r-----. 1 mssql 10001 4294967296 Mar 25 15:35 TestDB.mdf
+bash-4.4$ ls -l log2/
+total 1048576
+-rw-r-----. 1 mssql 10001 1073741824 Mar 25 15:37 TestDB_log.ldf
+bash-4.4$ exit
+exit
+[root@master tmp]#
+
+
+##SQL BDC Cluster
+[root@master tmp]# useradd stack
+[root@master tmp]# echo redhat | passwd stack --stdin
+Changing password for user stack.
+passwd: all authentication tokens updated successfully.
+[root@master tmp]# echo "stack ALL=(root) NOPASSWD:ALL" | tee -a /etc/sudoers.d/stack
+stack ALL=(root) NOPASSWD:ALL
+[root@master tmp]# chmod 0440 /etc/sudoers.d/stack
+[root@master tmp]# su - stack
+[stack@master ~]$ sudo ls
+[stack@master ~]$ yum install wget
+[stack@master ~]$ wget --no-check-certificate https://packages.microsoft.com/keys/microsoft.asc
+[stack@master ~]$ sudo rpm --import microsoft.asc
+[stack@master ~]$ sudo curl -k -o /etc/yum.repos.d/mssql-server.repo https://packages.microsoft.com/config/rhel/8/prod.repo
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100   192  100   192    0     0    240      0 --:--:-- --:--:-- --:--:--   240
+[stack@master ~]$ sudo cat /etc/yum.repos.d/mssql-server.repo
+[packages-microsoft-com-prod]
+name=packages-microsoft-com-prod
+baseurl=https://packages.microsoft.com/rhel/8/prod/
+enabled=1
+gpgcheck=1
+gpgkey=https://packages.microsoft.com/keys/microsoft.asc
+[stack@master ~]$
+[stack@master ~]$ sudo yum -y install azdata-cli
+[stack@master ~]$ azdata --version
+20.3.1
+
+Build (20210226.1)
+
+SQL Server 2019 (15.0.4100)
+
+Legal docs and information: https://aka.ms/eula-azdata-en
+
+Python (Linux) 3.6.8 (default, Aug 24 2020, 17:57:11)
+[GCC 8.3.1 20191121 (Red Hat 8.3.1-5)]
+
+Python location '/usr/bin/python3'
+
+[stack@master ~]$ azdata bdc config list
+The privacy statement can be viewed at:
+https://go.microsoft.com/fwlink/?LinkId=853010
+
+The license terms for azdata can be viewed at:
+https://aka.ms/eula-azdata-en
+
+Do you accept the license terms? (y/n): y
+[
+  "aks-dev-test",
+  "aks-dev-test-ha",
+  "aro-dev-test",
+  "aro-dev-test-ha",
+  "kubeadm-dev-test",
+  "kubeadm-prod",
+  "openshift-dev-test",
+  "openshift-prod"
+]
+[stack@master ~]$ azdata bdc config init --source kubeadm-dev-test --target custom
+Option '--target' has been deprecated and will be removed in a future release. Use '--path' instead.
+"Created configuration profile in custom"
+[stack@master ~]$ vi custom/control.json
+[stack@master ~]$ cat custom/control.json
+{
+    "apiVersion": "v1",
+    "metadata": {
+        "kind": "Cluster",
+        "name": "mssql-cluster"
+    },
+    "spec": {
+        "docker": {
+            "registry": "mcr.microsoft.com",
+            "repository": "mssql/bdc",
+            "imageTag": "2019-CU9-ubuntu-16.04",
+            "imagePullPolicy": "IfNotPresent"
+        },
+        "storage": {
+            "data": {
+                "className": "powerstore-xfs",
+                "accessMode": "ReadWriteOnce",
+                "size": "15Gi"
+            },
+            "logs": {
+                "className": "powerstore-xfs",
+                "accessMode": "ReadWriteOnce",
+                "size": "10Gi"
+            }
+        },
+        "endpoints": [
+            {
+                "name": "Controller",
+                "serviceType": "NodePort",
+                "port": 30080
+            },
+            {
+                "name": "ServiceProxy",
+                "serviceType": "NodePort",
+                "port": 30777
+            }
+        ],
+        "settings": {
+            "controller": {
+                "logs.rotation.size": "5000",
+                "logs.rotation.days": "7"
+            }
+        }
+    },
+    "security": {}
+}
+[stack@master ~]$exit
+
+[root@master tmp]# cp -a /home/stack/custom/ ./
+[root@master tmp]# ls custom/
+bdc.json  control.json
+[root@master tmp]# vi custom/control.json
+[root@master tmp]# azdata bdc create --config-profile custom --accept-eula yes
+The privacy statement can be viewed at:
+https://go.microsoft.com/fwlink/?LinkId=853010
+
+The license terms for SQL Server Big Data Cluster can be viewed at:
+Enterprise: https://go.microsoft.com/fwlink/?linkid=2104292
+Standard: https://go.microsoft.com/fwlink/?linkid=2104294
+Developer: https://go.microsoft.com/fwlink/?linkid=2104079
+
+
+Cluster deployment documentation can be viewed at:
+https://aka.ms/bdc-deploy
+
+Azdata username:admin
+Azdata password:
+Confirm Azdata password:
+
+NOTE: Cluster creation can take a significant amount of time depending on
+configuration, network speed, and the number of nodes in the cluster.
+
+Starting cluster deployment.
+Waiting for cluster controller to start.
+...
+
+
+
+
+
+issue:
+[root@master ~]# kubectl get pods -w -n csi-powerstore
+NAME                                     READY   STATUS             RESTARTS   AGE
+powerstore-controller-7bc455d5c7-bn2q9   5/5     Running            184        16h
+powerstore-controller-7bc455d5c7-d4fjd   4/5     CrashLoopBackOff   184        16h
+powerstore-controller-7bc455d5c7-vfvgt   4/5     CrashLoopBackOff   184        16h
+powerstore-node-6hljh                    2/2     Running            0          16h
+powerstore-node-jbbds                    2/2     Running            0          16h
+powerstore-node-xg7wp                    2/2     Running            0          16h
+powerstore-controller-7bc455d5c7-bn2q9   4/5     Error              184        16h
+powerstore-controller-7bc455d5c7-bn2q9   4/5     CrashLoopBackOff   184        16h
+
+
+[root@master dell-csi-helm-installer]# kubectl logs -f powerstore-controller-7bc455d5c7-bn2q9 -c snapshotter
+
+I0322 10:11:27.729241       1 leaderelection.go:248] failed to acquire lease csi-powerstore/external-snapshotter-leader-csi-powerstore-dellemc-com
+E0322 10:12:06.262052       1 leaderelection.go:325] error retrieving resource lock csi-powerstore/external-snapshotter-leader-csi-powerstore-dellemc-com: Get "https://10.96.0.1:443/apis/coordination.k8s.io/v1/namespaces/csi-powerstore/leases/external-snapshotter-leader-csi-powerstore-dellemc-com": dial tcp 10.96.0.1:443: i/o timeout
+I0322 10:12:06.262096       1 leaderelection.go:248] failed to acquire lease csi-powerstore/external-snapshotter-leader-csi-powerstore-dellemc-com
+E0322 10:12:45.820648       1 leaderelection.go:325] error retrieving resource lock csi-powerstore/external-snapshotter-leader-csi-powerstore-dellemc-com: Get "https://10.96.0.1:443/apis/coordination.k8s.io/v1/namespaces/csi-powerstore/leases/external-snapshotter-leader-csi-powerstore-dellemc-com": dial tcp 10.96.0.1:443: i/o timeout
+I0322 10:12:45.820688       1 leaderelection.go:248] failed to acquire lease csi-powerstore/external-snapshotter-leader-csi-powerstore-dellemc-com
+^C
