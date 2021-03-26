@@ -640,7 +640,7 @@ exit
 [root@master tmp]#
 
 
-##SQL BDC Cluster
+##SQL BDC Cluster Deployment
 [root@master tmp]# useradd stack
 [root@master tmp]# echo redhat | passwd stack --stdin
 Changing password for user stack.
@@ -779,8 +779,38 @@ Starting cluster deployment.
 Waiting for cluster controller to start.
 ...
 
+[root@master tmp]# kubectl get pods -n mssql-cluster
+[root@master tmp]# kubectl get pvc -n mssql-cluster -L app,plane,role,type
 
+#check BDC status
+azdata login
+azdata bdc endpoint list -o table
+azdata bdc status show
+azdata bdc control status show
+azdata bdc sql status show
 
+azdata bdc endpoint list -e sql-server-master
+Azure Data Studio (launch GUI console, connect to bdc "xxxip,31433)
+https://docs.microsoft.com/en-us/sql/big-data-cluster/connect-to-big-data-cluster?view=sql-server-ver15
+
+#BDC
+-Controller
+-Compute pool
+-Data pool
+-Storage pool
+HDFS (Hadoop Distributed File System)
+
+#Load sample data
+curl -o bootstrap-sample-db.sh "https://raw.githubusercontent.com/Microsoft/sql-server-samples/master/samples/features/sql-big-data-cluster/bootstrap-sample-db.sh"
+chmod +x bootstrap-sample-db.sh
+curl -o bootstrap-sample-db.sql "https://raw.githubusercontent.com/Microsoft/sql-server-samples/master/samples/features/sql-big-data-cluster/bootstrap-sample-db.sql"
+./bootstrap-sample-db.sh <CLUSTER_NAMESPACE> <SQL_MASTER_ENDPOINT> <KNOX_ENDPOINT>
+
+#BDC workshop lab
+https://github.com/microsoft/sqlworkshops-bdc
+https://aka.ms/bdc-samples
+
+#BDC offline deployments
 
 
 issue:
