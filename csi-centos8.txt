@@ -783,7 +783,7 @@ Waiting for cluster controller to start.
 [root@master tmp]# kubectl get pvc -n mssql-cluster -L app,plane,role,type
 
 #check BDC status
-azdata login
+azdata login -n mssql-cluster
 azdata bdc endpoint list -o table
 azdata bdc status show
 azdata bdc control status show
@@ -811,6 +811,9 @@ https://github.com/microsoft/sqlworkshops-bdc
 https://aka.ms/bdc-samples
 
 #BDC offline deployments
+
+#BDC upgrade
+azdata bdc upgrade -n mssql-cluster -t 2019-CU5-ubuntu-16.04 -r mcr.microsoft.com/mssql/bdc
 
 
 issue:
