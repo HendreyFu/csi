@@ -133,6 +133,9 @@ for i in {master,node1,node2,node3}; do ssh $i yum install -y kubelet kubeadm ku
 [root@master ~]# chmod +x /tmp/config.sh
 [root@master ~]# /tmp/config.sh
 
+#Note:
+Don't change docker.service to "MountFlags=shared" in /etc/systemd/system/multi-user.target.wants/docker.service, it will cause Centos 8 docker failed to start!!!
+
 [root@master ~]# kubeadm config images pull
 [config/images] Pulled k8s.gcr.io/kube-apiserver:v1.20.5
 [config/images] Pulled k8s.gcr.io/kube-controller-manager:v1.20.5
@@ -793,11 +796,17 @@ azdata bdc endpoint list -e sql-server-master
 Azure Data Studio (launch GUI console, connect to bdc "xxxip,31433)
 https://docs.microsoft.com/en-us/sql/big-data-cluster/connect-to-big-data-cluster?view=sql-server-ver15
 
-#BDC
--Controller
--Compute pool
--Data pool
--Storage pool
+#BDC Architecture
+https://www.youtube.com/watch?v=GvOo-VV7-p4
+Control Plane
+  -Controller(SQL Server Master,Knox Gateway,Livy,HIVE,SQL Cluster Administration Portal,Grafana Dashboard,Kibana Dashboard)
+Compute Plane
+  -Compute Pool(SQL Server,SQL Server...)
+Data Plane
+  -Data Pool(SQL Server)
+  -Storage Pool(SQL Server,Spark,HDFS)
+App Pool
+  -App Pool(ML Server,Job(SSIS),Web Apps)
 HDFS (Hadoop Distributed File System)
 
 #Load sample data
@@ -807,6 +816,7 @@ curl -o bootstrap-sample-db.sql "https://raw.githubusercontent.com/Microsoft/sql
 ./bootstrap-sample-db.sh <CLUSTER_NAMESPACE> <SQL_MASTER_ENDPOINT> <KNOX_ENDPOINT>
 
 #BDC workshop lab
+https://microsoft.github.io/sqlworkshops/
 https://github.com/microsoft/sqlworkshops-bdc
 https://aka.ms/bdc-samples
 
