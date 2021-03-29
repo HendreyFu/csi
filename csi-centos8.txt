@@ -644,6 +644,9 @@ exit
 
 
 ##SQL BDC Cluster Deployment
+SQL Server 2019 Big Data Clusters
+https://www.youtube.com/watch?v=syFE77B6d14
+
 [root@master tmp]# useradd stack
 [root@master tmp]# echo redhat | passwd stack --stdin
 Changing password for user stack.
@@ -810,6 +813,7 @@ App Pool
 HDFS (Hadoop Distributed File System)
 
 #Load sample data
+https://github.com/microsoft/sql-server-samples/tree/master/samples/features/sql-big-data-cluster
 curl -o bootstrap-sample-db.sh "https://raw.githubusercontent.com/Microsoft/sql-server-samples/master/samples/features/sql-big-data-cluster/bootstrap-sample-db.sh"
 chmod +x bootstrap-sample-db.sh
 curl -o bootstrap-sample-db.sql "https://raw.githubusercontent.com/Microsoft/sql-server-samples/master/samples/features/sql-big-data-cluster/bootstrap-sample-db.sql"
