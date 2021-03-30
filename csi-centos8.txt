@@ -809,7 +809,7 @@ Data Plane
   -Data Pool(SQL Server)
   -Storage Pool(SQL Server,Spark,HDFS)
 App Pool
-  -App Pool(ML Server,Job(SSIS),Web Apps)
+  -App Pool(ML Server,Job(SSIS(SQL Server Integration Services)),Web Apps)
 HDFS (Hadoop Distributed File System)
 
 #Load sample data
