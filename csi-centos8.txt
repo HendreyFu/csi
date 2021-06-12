@@ -111,7 +111,8 @@ store:
             "release": "291",
             "version": "1.3.0"
 
-[root@master ~]# for i in {master,node1,node2,node3}; do ssh $i yum install -y kubelet kubeadm kubectl --disableexcludes=kubernetes ; done
+[root@master ~]# yum list --showduplicates kubeadm --disableexcludes=kubernetes | sort -r
+[root@master ~]# for i in {master,node1,node2,node3}; do ssh $i yum install -y kubelet-1.20.7-0 kubeadm-1.20.7-0 kubectl-1.20.7-0 --disableexcludes=kubernetes ; done
 
 
   128  for i in {master,node1,node2,node3}; do ssh $i podman rmi dellemc/csi-powerstore && podman images ; done
@@ -270,6 +271,7 @@ I0324 11:43:43.002825       1 shared_informer.go:270] caches populated
 I0324 11:43:43.002921       1 snapshot_controller_base.go:485] controller initialized
 [root@master csi-powerstore]#
 
+[root@master csi-powerstore]# kubectl create namespace csi-powerstore
 
 [root@master dell-csi-helm-installer]# ./csi-install.sh --namespace csi-powerstore --values ./my-powerstore-settings.yaml
 ------------------------------------------------------
