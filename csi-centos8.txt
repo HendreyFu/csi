@@ -749,7 +749,29 @@ exit
 [root@master tmp]#
 
 #install Azure Data Studio
-
+1)https://docs.microsoft.com/en-us/sql/azure-data-studio/download-azure-data-studio?view=sql-server-ver15
+2)check witch node and ports run sql server
+[root@master tmp]# kubectl get service -o wide
+NAME               TYPE       CLUSTER-IP     EXTERNAL-IP   PORT(S)          AGE     SELECTOR
+mssql-deployment   NodePort   10.110.1.211   <none>        1433:30859/TCP   5h10m   app=mssql
+[root@master tmp]# kubectl get pods -o wide
+NAME                                     READY   STATUS    RESTARTS   AGE     IP             NODE     NOMINATED NODE   READINESS GATES
+mssql-deployment-5f4cd94964-hdbrd        1/1     Running   0          5h10m   10.244.1.12    node1    <none>           <none>
+powerstore-controller-7bc455d5c7-5zm85   5/5     Running   112        14h     10.244.1.11    node1    <none>           <none>
+powerstore-controller-7bc455d5c7-kqlrv   5/5     Running   10         14h     10.244.0.10    master   <none>           <none>
+powerstore-node-rskw4                    2/2     Running   4          14h     192.168.1.21   node1    <none>           <none>
+powerstore-node-z7l8b                    2/2     Running   4          14h     192.168.1.20   master   <none>           <none>
+[root@master tmp]#
+3)check sql listen port
+[root@master tmp]# ssh node1
+Last login: Sun Jun 13 02:22:10 2021 from 192.168.1.20
+[root@node1 ~]# netstat -ntpl|grep 30859
+tcp        0      0 0.0.0.0:30859           0.0.0.0:*               LISTEN      5555/kube-proxy
+4)install GUI Azure Data Studio on client,
+Server:    192.168.1.21,30859
+User Name: sa
+Password:  P@ssw0rd!
+5)test db scripts...
 
 ##SQL BDC Cluster Deployment
 SQL Server 2019 Big Data Clusters
