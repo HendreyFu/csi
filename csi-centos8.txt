@@ -773,6 +773,43 @@ User Name: sa
 Password:  P@ssw0rd!
 5)test db scripts...
 
+#use root config sql container
+1)
+[root@node1 ~]# docker ps -l
+CONTAINER ID   IMAGE          COMMAND                  CREATED       STATUS       PORTS     NAMES
+efcf6d8e2a05   31312494c1b6   "/opt/mssql/bin/perm…"   7 hours ago   Up 7 hours             k8s_mssql_mssql-deployment-5f4cd94964-hdbrd_csi-powerstore_526d50ff-b729-49d4-ae20-d1caa22ae68c_0
+[root@node1 ~]# docker exec -u 0 -it efcf6d8e2a05 bash
+[root@mssqlinst /]# id
+uid=0(root) gid=0(root) groups=0(root),10001
+[root@mssqlinst /]# /opt/mssql/bin/
+checkinstallextensibility.sh  generate-sql-dump.sh          mssql-conf                    setnetbr
+compress-dump.sh              handle-crash.sh               paldumper                     sqlservr
+crash-support-functions.sh    launchpadd                    permissions_check.sh
+[root@mssqlinst /]# /opt/mssql/bin/mssql-conf list
+control.alternatewritethrough                           Enable optimized write through flush for O_DSYNC requests
+control.hestacksize                                     Host extension stack size in KB
+control.stoponguestprocessfault                         Stops the process if any guest process reports unhandled exception
+control.writethrough                                    Use O_DSYNC for file flag write through requests
+[root@mssqlinst /]# /opt/mssql/bin/mssql-conf setup
+The license terms for this product can be found in
+/usr/share/doc/mssql-server or downloaded from:
+https://go.microsoft.com/fwlink/?LinkId=2104294&clcid=0x409
+
+The privacy statement can be viewed at:
+https://go.microsoft.com/fwlink/?LinkId=853010&clcid=0x409
+
+Configuring SQL Server...
+
+Initial setup of Microsoft SQL Server failed. Please consult the ERRORLOG
+in /var/opt/mssql/log for more information.
+
+2)
+recommand use Environment variables:
+https://docs.microsoft.com/en-us/sql/linux/sql-server-linux-configure-environment-variables?view=sql-server-ver15
+
+
+
+
 ##SQL BDC Cluster Deployment
 SQL Server 2019 Big Data Clusters
 https://www.youtube.com/watch?v=syFE77B6d14
