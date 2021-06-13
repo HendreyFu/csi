@@ -729,6 +729,21 @@ total 4.1G
 bash-4.4$ ls -hl log2/
 total 1.0G
 -rw-r-----. 1 mssql 10001 1.0G Jun 13 04:13 TestDB_log.ldf
+bash-4.4$ df -H
+Filesystem                                                                                                     Size  Used Avail Use% Mounted on
+overlay                                                                                                         67G  5.6G   62G   9% /
+tmpfs                                                                                                           68M     0   68M   0% /dev
+tmpfs                                                                                                          4.1G     0  4.1G   0% /sys/fs/cgroup
+/dev/mapper/cl-root                                                                                             67G  5.6G   62G   9% /etc/hosts
+shm                                                                                                             68M     0   68M   0% /dev/shm
+/var/lib/kubelet/plugins/kubernetes.io/csi/pv/csi-dd3ec0be94/globalmount/3d04bbd4-3605-4587-a7ae-bf19bf22de5b   11G  122M   11G   2% /var/opt/mssql
+/var/lib/kubelet/plugins/kubernetes.io/csi/pv/csi-7edc4ccc2d/globalmount/c9fc234b-3340-4949-8e73-a5b661fcd448  5.4G  4.4G  1.1G  81% /var/opt/mssql/data2
+/var/lib/kubelet/plugins/kubernetes.io/csi/pv/csi-b9e32a1ef8/globalmount/696cb268-651c-4b64-95fc-21d649880944  2.2G  1.2G  1.1G  52% /var/opt/mssql/log2
+tmpfs                                                                                                          4.1G   13k  4.1G   1% /run/secrets/kubernetes.io/serviceaccount
+tmpfs                                                                                                          4.1G     0  4.1G   0% /proc/acpi
+tmpfs                                                                                                          4.1G     0  4.1G   0% /proc/scsi
+tmpfs                                                                                                          4.1G     0  4.1G   0% /sys/firmware
+bash-4.4$
 bash-4.4$ exit
 exit
 [root@master tmp]#
