@@ -280,6 +280,85 @@ I0324 11:43:43.002921       1 snapshot_controller_base.go:485] controller initia
 
 [root@master csi-powerstore]# kubectl create namespace csi-powerstore
 
+[root@master csi-powerstore]# cat helm/secret.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: powerstore-config
+  # Set driver namespace
+  namespace: csi-powerstore
+type: Opaque
+data:
+  config: CONFIG_YAML
+[root@master csi-powerstore]# cat helm/config.yaml
+# You can apply current config to Kubernetes cluster by running following command:
+#
+# sed "s/CONFIG_YAML/`cat config.yaml | base64 -w0`/g" secret.yaml | kubectl apply -f -
+#
+arrays:
+  - endpoint: "https://192.168.1.30/api/rest"
+    # full URL path to the PowerStore API
+    username: "admin"
+    # username for connecting to API
+    password: "P@ssw0rd!"
+    # password for connecting to API
+    insecure: true
+    # use insecure connection or not
+    default: true
+    # treat current array as a default (would be used by storage classes without arrayIP parameter)
+    block-protocol: "auto"
+    # what SCSI transport protocol use on node side (FC, ISCSI, None, or auto)
+    nas-name: "nas-server"
+    # what NAS should be used for NFS volumes
+
+[root@master csi-powerstore]# cat helm/samples/storageclass/powerstore-xfs.yaml
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: powerstore-xfs
+provisioner: csi-powerstore.dellemc.com
+reclaimPolicy: Delete
+allowVolumeExpansion: true
+volumeBindingMode: Immediate
+parameters:
+  arrayIP: "192.168.1.30"
+  FsType: xfs
+[root@master csi-powerstore]# kubectl apply -f helm/samples/storageclass/powerstore-xfs.yaml
+
+[root@master csi-powerstore]# sed "s/CONFIG_YAML/`cat helm/config.yaml | base64 -w0`/g" helm/secret.yaml | kubectl apply -f -
+[root@master csi-powerstore]# kubectl get secrets -n csi-powerstore
+NAME                                TYPE                                  DATA   AGE
+default-token-mbnbb                 kubernetes.io/service-account-token   3      10h
+powerstore-config                   Opaque                                1      10h
+powerstore-controller-token-r9m6r   kubernetes.io/service-account-token   3      9h
+powerstore-node-token-gfq4x         kubernetes.io/service-account-token   3      9h
+sh.helm.release.v1.powerstore.v1    helm.sh/release.v1                    1      9h
+
+[root@master csi-powerstore]# cd dell-csi-helm-installer/
+[root@master dell-csi-helm-installer]# cat my-powerstore-settings.yaml
+# "driverName" defines the name of driver (provisioner)
+driverName: "csi-powerstore.dellemc.com"
+volumeNamePrefix: csi
+nodeNamePrefix: csi-node
+nodeIDPath: /etc/hostname
+
+controller:
+  nodeSelector:
+  tolerations:
+  replicas: 3
+
+node:
+  nodeSelector:
+  tolerations:
+
+nodeFCPortsFilterFile: /etc/fc-ports-filter
+
+snapshotClass:
+  name: powerstore-snapshot
+externalAccess:
+[root@master dell-csi-helm-installer]#
+
+
 [root@master dell-csi-helm-installer]# ./csi-install.sh --namespace csi-powerstore --values ./my-powerstore-settings.yaml
 ------------------------------------------------------
 > Installing CSI Driver: csi-powerstore on 1.20
