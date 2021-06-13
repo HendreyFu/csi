@@ -649,6 +649,8 @@ secret/mssql created
 mssql                               Opaque                                1      26s
 
 [root@master tmp]# mkdir sql
+[root@master tmp]# wget https://raw.githubusercontent.com/HendreyFu/csi/main/pvc.yaml -O /tmp/sql/pvc.yaml
+[root@master tmp]# wget https://raw.githubusercontent.com/HendreyFu/csi/main/sql.yaml -O /tmp/sql/sql.yaml
 [root@master tmp]# vim sql/pvc.yaml
 [root@master tmp]# kubectl create -f sql/pvc.yaml
 persistentvolumeclaim/mssql-data created
@@ -664,6 +666,7 @@ NAME             CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM      
 csi-2eb515d932   10Gi       RWO            Delete           Bound    csi-powerstore/mssql-data    powerstore-xfs            54s
 csi-88d9b52745   5Gi        RWO            Delete           Bound    csi-powerstore/mssql-data2   powerstore-xfs            54s
 csi-c8c433a697   2Gi        RWO            Delete           Bound    csi-powerstore/mssql-log2    powerstore-xfs            54s
+[root@master tmp]# kubectl create secret generic mssql --from-literal=SA_PASSWORD="P@ssw0rd!"
 [root@master tmp]# vim sql/sql.yaml
 [root@master tmp]# kubectl create -f sql/sql.yaml
 deployment.apps/mssql-deployment created
@@ -697,7 +700,7 @@ kubectl exec [POD] [COMMAND] is DEPRECATED and will be removed in a future versi
 bash-4.4$ /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P P@ssw0rd!
 1> select @@VERSION as Version, SERVERPROPERTY('ServerName') as 'Container ID', SERVERPROPERTY('Edition') as Edition;
 2> go
-1> create database [TestDB] CONTAINMENT = NONE on primary ( NAME = N'TestDB', FILENAME = N'/var/opt/mssql/data2/TestDB.mdf', SIZE = 4GB, FILEGROWTH = 10
+1> create database [TestDB] CONTAINMENT = NONE on primary ( NAME = N'TestDB', FILENAME = N'/var/opt/mssql/data2/TestDB.mdf', SIZE = 4GB, FILEGROWTH = 1024KB ) LOG ON ( NAME = N'TestDB_log', FILENAME = N'/var/opt/mssql/log2/TestDB_log.ldf', SIZE = 1GB, FILEGROWTH = 10% )
 2> go
 1> use TestDB
 2> CREATE TABLE Inventory (id INT, name NVARCHAR(50), quantity INT)
@@ -720,12 +723,12 @@ id          name                                               quantity
 bash-4.4$ cd /var/opt/mssql/
 bash-4.4$ ls
 data  data2  log  log2  secrets
-bash-4.4$ ls -l data2/
-total 4194308
--rw-r-----. 1 mssql 10001 4294967296 Mar 25 15:35 TestDB.mdf
-bash-4.4$ ls -l log2/
-total 1048576
--rw-r-----. 1 mssql 10001 1073741824 Mar 25 15:37 TestDB_log.ldf
+bash-4.4$ ls -hl data2/
+total 4.1G
+-rw-r-----. 1 mssql 10001 4.0G Jun 13 04:11 TestDB.mdf
+bash-4.4$ ls -hl log2/
+total 1.0G
+-rw-r-----. 1 mssql 10001 1.0G Jun 13 04:13 TestDB_log.ldf
 bash-4.4$ exit
 exit
 [root@master tmp]#
