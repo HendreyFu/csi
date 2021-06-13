@@ -748,6 +748,8 @@ bash-4.4$ exit
 exit
 [root@master tmp]#
 
+#install Azure Data Studio
+
 
 ##SQL BDC Cluster Deployment
 SQL Server 2019 Big Data Clusters
