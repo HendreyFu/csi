@@ -806,6 +806,7 @@ in /var/opt/mssql/log for more information.
 2)
 recommand use Environment variables:
 https://docs.microsoft.com/en-us/sql/linux/sql-server-linux-configure-environment-variables?view=sql-server-ver15
+https://www.sqlshack.com/configure-sql-server-2017-linux-mssql-conf-available-tools/
 
 
 
