@@ -12,6 +12,9 @@ vsi web can't login after init..
 
 
 ====CSI 03/21/2021
+Supported Platforms and Support Kubernetes version!!!
+https://dell.github.io/storage-plugin-docs/docs/dell-csi-driver/
+
 Centos 8.3
 Note:
 Kubernetes cannot work with Podman (which is now the default container engine for both RHEL and CentOS).
