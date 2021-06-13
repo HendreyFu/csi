@@ -697,7 +697,7 @@ powerstore-node-7n9wp                    2/2     Running   0          25h   192.
 powerstore-node-k24jj                    2/2     Running   0          25h   192.168.1.21   node1   <none>           <none>
 [root@master tmp]# kubectl exec -it mssql-deployment-5f4cd94964-bw9gt bash
 kubectl exec [POD] [COMMAND] is DEPRECATED and will be removed in a future version. Use kubectl exec [POD] -- [COMMAND] instead.
-bash-4.4$ /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P P@ssw0rd!
+bash-4.4$ /opt/mssql-tools/bin/sqlcmd -S localhost,1433 -U sa -P P@ssw0rd!
 1> select @@VERSION as Version, SERVERPROPERTY('ServerName') as 'Container ID', SERVERPROPERTY('Edition') as Edition;
 2> go
 1> create database [TestDB] CONTAINMENT = NONE on primary ( NAME = N'TestDB', FILENAME = N'/var/opt/mssql/data2/TestDB.mdf', SIZE = 4GB, FILEGROWTH = 1024KB ) LOG ON ( NAME = N'TestDB_log', FILENAME = N'/var/opt/mssql/log2/TestDB_log.ldf', SIZE = 1GB, FILEGROWTH = 10% )
