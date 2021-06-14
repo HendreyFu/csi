@@ -171,11 +171,11 @@ k8s.gcr.io/pause                     3.2        80d28bedfe5d   13 months ago   6
   140  systemctl status kubelet
   141  netstat -ntpl
   142  kubectl get nodes
-  143  kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/2140ac876ef134e0ed5af15c65e414cf26827915/Documentation/kube-flannel.yml
+  143  kubectl apply -f https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml
   144  echo "export KUBECONFIG=/etc/kubernetes/admin.conf" >> ~/.bash_profile
   145  echo "source <(kubectl completion bash)" >> ~/.bash_profile
   146  source ~/.bash_profile
-  147  kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/2140ac876ef134e0ed5af15c65e414cf26827915/Documentation/kube-flannel.yml
+  147  kubectl apply -f https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml
   148  kubectl get cs
   149  vi ~/.vimrc
   150  vim /etc/kubernetes/manifests/kube-controller-manager.yaml
