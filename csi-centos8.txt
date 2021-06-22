@@ -15,7 +15,7 @@ vsi web can't login after init..
 Supported Platforms and Support Kubernetes version!!!
 https://dell.github.io/storage-plugin-docs/docs/dell-csi-driver/
 
-Release Notes - CSI PowerStore v1.4.0 (06/22/2021)
+Release Notes - CSI PowerStore v1.4.0 (06/18/2021)
 New Features/Changes
 -Added support for Kubernetes v1.21
 -Added support for OpenShift 4.7 with RHEL and CoreOS worker nodes
@@ -284,6 +284,17 @@ Procedure
 Run git clone https://github.com/dell/csi-powerstore.git to clone the git repository
 ...
 ...
+[root@master ~]# cd csi-powerstore/
+[root@master csi-powerstore]# ls
+cmd  core  dell-csi-helm-installer  docker-files  docker.mk  env.sh  go.mod  go.sum  helm  LICENSE  licenses  Makefile  mocks  pkg  README.md  tests
+[root@master csi-powerstore]# ls helm/
+config.yaml  csi-powerstore  README.md  samples  secret.yaml
+
+[root@master csi-powerstore]# cat helm/csi-powerstore/driver-image.yaml | grep driver
+  # "images.driver" defines the container images used for the driver container.
+  driver: dellemc/csi-powerstore:v1.4.0
+[root@master csi-powerstore]# for i in {master,node1,node2,node3}; do ssh $i docker pull dellemc/csi-powerstore:v1.4.0 ; ssh $i docker images ; done
+
 [root@master dell-csi-helm-installer]# kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/v4.0.0/client/config/crd/snapshot.storage.k8s.io_volumesnapshots.yaml
 customresourcedefinition.apiextensions.k8s.io/volumesnapshots.snapshot.storage.k8s.io created
 [root@master dell-csi-helm-installer]# kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/v4.0.0/client/config/crd/snapshot.storage.k8s.io_volumesnapshotclasses.yaml
@@ -365,6 +376,28 @@ metadata:
 type: Opaque
 data:
   config: CONFIG_YAML
+ 
+[root@linux17 ~]# curl -k --user admin:P@ssw0rd! https://192.168.1.30/api/rest/cluster?select=* | json_reformat
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100   310    0   310    0     0   1920      0 --:--:-- --:--:-- --:--:--  1913
+[
+    {
+        "id": "0",
+        "global_id": "PS04e694d0c442",
+        "name": "POD3-Cluster1",
+        "physical_mtu": 1500,
+        "master_appliance_id": "A1",
+        "state": "Configured",
+        "appliance_count": 1,
+        "management_address": "192.168.1.30",
+        "is_encryption_enabled": true,
+        "storage_discovery_address": "192.168.2.30",
+        "compatibility_level": 1,
+        "state_l10n": "Configured"
+    }
+]
+ 
 [root@master csi-powerstore]# cat helm/config.yaml
 # You can apply current config to Kubernetes cluster by running following command:
 #
@@ -373,19 +406,37 @@ data:
 arrays:
   - endpoint: "https://192.168.1.30/api/rest"
     # full URL path to the PowerStore API
+    globalID: "PS04e694d0c442"
+    # unique id of the PowerStore array, powerstore os 2.0 add!!!
     username: "admin"
     # username for connecting to API
     password: "P@ssw0rd!"
     # password for connecting to API
-    insecure: true
-    # use insecure connection or not
-    default: true
-    # treat current array as a default (would be used by storage classes without arrayIP parameter)
-    block-protocol: "auto"
+    skipCertificateValidation: true
+    # indicates if client side validation of (management)server's certificate can be skipped
+    isDefault: true
+    # treat current array as a default (would be used by storage classes without arrayID parameter)
+    blockProtocol: "auto"
     # what SCSI transport protocol use on node side (FC, ISCSI, None, or auto)
-    nas-name: "nas-server"
+    #nasName: "nas-server"
     # what NAS should be used for NFS volumes
+[root@master csi-powerstore]#
 
+#csi v1.4.0 storageclass use arrayID!!
+[root@master csi-powerstore]# cat helm/samples/storageclass/powerstore-xfs.yaml
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: powerstore-xfs
+provisioner: csi-powerstore.dellemc.com
+reclaimPolicy: Delete
+allowVolumeExpansion: true
+volumeBindingMode: Immediate
+parameters:
+  arrayID: "PS04e694d0c442"
+  FsType: xfs
+
+#csi v1.3.0 storageclass use arrayIP!!
 [root@master csi-powerstore]# cat helm/samples/storageclass/powerstore-xfs.yaml
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
@@ -398,41 +449,46 @@ volumeBindingMode: Immediate
 parameters:
   arrayIP: "192.168.1.30"
   FsType: xfs
+  
+[root@master csi-powerstore]# kubectl get sc
+No resources found
 [root@master csi-powerstore]# kubectl apply -f helm/samples/storageclass/powerstore-xfs.yaml
+storageclass.storage.k8s.io/powerstore-xfs created
+[root@master csi-powerstore]# kubectl get sc
+NAME             PROVISIONER                  RECLAIMPOLICY   VOLUMEBINDINGMODE   ALLOWVOLUMEEXPANSION   AGE
+powerstore-xfs   csi-powerstore.dellemc.com   Delete          Immediate           true                   18s
 
 [root@master csi-powerstore]# sed "s/CONFIG_YAML/`cat helm/config.yaml | base64 -w0`/g" helm/secret.yaml | kubectl apply -f -
 [root@master csi-powerstore]# kubectl get secrets -n csi-powerstore
-NAME                                TYPE                                  DATA   AGE
-default-token-mbnbb                 kubernetes.io/service-account-token   3      10h
-powerstore-config                   Opaque                                1      10h
-powerstore-controller-token-r9m6r   kubernetes.io/service-account-token   3      9h
-powerstore-node-token-gfq4x         kubernetes.io/service-account-token   3      9h
-sh.helm.release.v1.powerstore.v1    helm.sh/release.v1                    1      9h
+NAME                  TYPE                                  DATA   AGE
+default-token-9zbgd   kubernetes.io/service-account-token   3      81m
+powerstore-config     Opaque                                1      12s
 
-[root@master csi-powerstore]# cd dell-csi-helm-installer/
-[root@master dell-csi-helm-installer]# cat my-powerstore-settings.yaml
-# "driverName" defines the name of driver (provisioner)
+[root@master csi-powerstore]# cd dell-csi-helm-installer && cp ../helm/csi-powerstore/values.yaml ./my-powerstore-settings.yaml
+[root@master dell-csi-helm-installer]#
+[root@master dell-csi-helm-installer]# vim my-powerstore-settings.yaml
+[root@master dell-csi-helm-installer]# grep -v "^#\|^$\|^  #" my-powerstore-settings.yaml
 driverName: "csi-powerstore.dellemc.com"
 volumeNamePrefix: csi
 nodeNamePrefix: csi-node
 nodeIDPath: /etc/hostname
-
 controller:
   nodeSelector:
   tolerations:
   replicas: 3
-
 node:
   nodeSelector:
   tolerations:
-
+connection:
+  enableCHAP: false
 nodeFCPortsFilterFile: /etc/fc-ports-filter
-
-snapshotClass:
-  name: powerstore-snapshot
+snapshot:
+  enabled: false
+replication:
+  enabled: false
 externalAccess:
-[root@master dell-csi-helm-installer]#
 
+[root@master dell-csi-helm-installer]#
 
 [root@master dell-csi-helm-installer]# ./csi-install.sh --namespace csi-powerstore --values ./my-powerstore-settings.yaml
 ------------------------------------------------------
@@ -462,31 +518,13 @@ externalAccess:
   |
   |--> Verifying that alpha snapshot CRDs are not installed         Success
 |
-|- Verifying snapshot support
-  |
-  |--> Verifying that snapshot CRDs are available                   Success
-  |
-  |--> Verifying that the snapshot controller is available          Success
-|
-|- Verifying NFS installation                                       Failed
-|
 |- Verifying iSCSI installation                                     Success
 |
 |- Verifying helm version                                           Success
 
 ------------------------------------------------------
-> Verification Complete - With Warnings
+> Verification Complete - Success
 ------------------------------------------------------
-Warnings:
-- Either mount.nfs was not found on node: 192.168.1.21 or not able to verify
-- Either mount.nfs was not found on node: 192.168.1.22 or not able to verify
-- Either mount.nfs was not found on node: 192.168.1.23 or not able to verify
-------------------------------------------------------
-WARNING:
-Kubernetes validation failed but installation can continue.
-This may affect driver installation.
-
-Press 'y' to continue or any other key to exit: y
 |
 |- Installing Driver                                                Success
   |
@@ -496,40 +534,37 @@ Press 'y' to continue or any other key to exit: y
 ------------------------------------------------------
 > Operation complete
 ------------------------------------------------------
-
 [root@master dell-csi-helm-installer]#
-[root@master dell-csi-helm-installer]# kubectl get pods
-NAME                                     READY   STATUS    RESTARTS   AGE
-powerstore-controller-7bc455d5c7-g2hlg   5/5     Running   0          11m
-powerstore-controller-7bc455d5c7-njnzn   5/5     Running   0          11m
-powerstore-controller-7bc455d5c7-w6fsl   5/5     Running   0          11m
-powerstore-node-74zc8                    2/2     Running   0          11m
-powerstore-node-7n9wp                    2/2     Running   0          11m
-powerstore-node-k24jj                    2/2     Running   0          11m
 
-[root@master dell-csi-helm-installer]# kubectl get sc
-NAME             PROVISIONER                  RECLAIMPOLICY   VOLUMEBINDINGMODE   ALLOWVOLUMEEXPANSION   AGE
-powerstore       csi-powerstore.dellemc.com   Delete          Immediate           true                   48m
-powerstore-xfs   csi-powerstore.dellemc.com   Delete          Immediate           true                   48m
-[root@master dell-csi-helm-installer]# kubectl describe pods powerstore-controller-7bc455d5c7-g2hlg |more
-Name:         powerstore-controller-7bc455d5c7-g2hlg
+[root@master dell-csi-helm-installer]# kubectl get pods -n csi-powerstore
+NAME                                     READY   STATUS    RESTARTS   AGE
+powerstore-controller-685ff6cb4b-2fr66   4/4     Running   0          7m11s
+powerstore-controller-685ff6cb4b-b5ds9   4/4     Running   0          7m11s
+powerstore-controller-685ff6cb4b-hzfxh   4/4     Running   0          7m11s
+powerstore-node-qbkv4                    2/2     Running   0          7m12s
+powerstore-node-vmbnt                    2/2     Running   0          7m12s
+powerstore-node-whxgc                    2/2     Running   0          7m12s
+[root@master dell-csi-helm-installer]#
+
+[root@master dell-csi-helm-installer]# kubectl describe -n csi-powerstore pods powerstore-controller-685ff6cb4b-2fr66
+Name:         powerstore-controller-685ff6cb4b-2fr66
 Namespace:    csi-powerstore
 Priority:     0
 Node:         node1/192.168.1.21
-Start Time:   Wed, 24 Mar 2021 08:30:03 -0400
+Start Time:   Tue, 22 Jun 2021 11:28:04 -0400
 Labels:       name=powerstore-controller
-              pod-template-hash=7bc455d5c7
+              pod-template-hash=685ff6cb4b
 Annotations:  <none>
 Status:       Running
-IP:           10.244.1.5
+IP:           10.244.1.3
 IPs:
-  IP:           10.244.1.5
-Controlled By:  ReplicaSet/powerstore-controller-7bc455d5c7
+  IP:           10.244.1.3
+Controlled By:  ReplicaSet/powerstore-controller-685ff6cb4b
 Containers:
   attacher:
-    Container ID:  docker://0ca8a597487abb7f937c700835e4a450603063dca1bbfba0507b34e5bcf7cf3e
-    Image:         k8s.gcr.io/sig-storage/csi-attacher:v3.1.0
-    Image ID:      docker-pullable://k8s.gcr.io/sig-storage/csi-attacher@sha256:50c3cfd458fc8e0bf3c8c521eac39172009382fc66dc5044a330d137c6ed0b09
+    Container ID:  docker://3826029288cde7cd96e827fc3a0ac7346b3e2e56a40f051ba8b1993f8ff1c968
+    Image:         k8s.gcr.io/sig-storage/csi-attacher:v3.2.1
+    Image ID:      docker-pullable://k8s.gcr.io/sig-storage/csi-attacher@sha256:60ab9b3e6a030d3038c87c0d6bca2930f58d1d72823e6a4af09767dc83b696a2
     Port:          <none>
     Host Port:     <none>
     Args:
@@ -540,18 +575,18 @@ Containers:
       --resync=10s
       --timeout=130s
     State:          Running
-      Started:      Wed, 24 Mar 2021 08:30:18 -0400
+      Started:      Tue, 22 Jun 2021 11:28:23 -0400
     Ready:          True
     Restart Count:  0
     Environment:
       ADDRESS:  /var/run/csi/csi.sock
     Mounts:
       /var/run/csi from socket-dir (rw)
-      /var/run/secrets/kubernetes.io/serviceaccount from powerstore-controller-token-v6rbm (ro)
+      /var/run/secrets/kubernetes.io/serviceaccount from powerstore-controller-token-dbsxh (ro)
   resizer:
-    Container ID:  docker://b25f702e041cb8c7155b7a8c80e608977cf18a42f88f32c5586c26cf9adefd43
-    Image:         k8s.gcr.io/sig-storage/csi-resizer:v1.1.0
-    Image ID:      docker-pullable://k8s.gcr.io/sig-storage/csi-resizer@sha256:7a5ba58a44e0d749e0767e4e37315bcf6a61f33ce3185c1991848af4db0fb70a
+    Container ID:  docker://7d1b09782c79bc5b85b8c15434792db93a1402a308213dffe24b5c46a602d8dc
+    Image:         k8s.gcr.io/sig-storage/csi-resizer:v1.2.0
+    Image ID:      docker-pullable://k8s.gcr.io/sig-storage/csi-resizer@sha256:36c31f7e1f433c9634d24f876353e8646246d81a03c4e351202c2644daff1620
     Port:          <none>
     Host Port:     <none>
     Args:
@@ -559,18 +594,18 @@ Containers:
       --v=5
       --leader-election
     State:          Running
-      Started:      Wed, 24 Mar 2021 08:30:37 -0400
+      Started:      Tue, 22 Jun 2021 11:28:42 -0400
     Ready:          True
     Restart Count:  0
     Environment:
       ADDRESS:  /var/run/csi/csi.sock
     Mounts:
       /var/run/csi from socket-dir (rw)
-      /var/run/secrets/kubernetes.io/serviceaccount from powerstore-controller-token-v6rbm (ro)
+      /var/run/secrets/kubernetes.io/serviceaccount from powerstore-controller-token-dbsxh (ro)
   provisioner:
-    Container ID:  docker://07cfc9ed7b10b20b00b2fb75b3f045d65a3d5a90766286ea057f1fc8799a7391
-    Image:         k8s.gcr.io/sig-storage/csi-provisioner:v2.1.0
-    Image ID:      docker-pullable://k8s.gcr.io/sig-storage/csi-provisioner@sha256:20c828075d1e36f679d6a91e905b0927141eef5e15be0c9a1ca4a6a0ed9313d2
+    Container ID:  docker://1e8a78c2527d04a71eb98f9ed833ddb9225233d65cacc6171007e50267e4a512
+    Image:         k8s.gcr.io/sig-storage/csi-provisioner:v2.2.1
+    Image ID:      docker-pullable://k8s.gcr.io/sig-storage/csi-provisioner@sha256:4e74c0492bceddc598de1c90cc5bc14dcda94cb49fa9c5bad9d117c4834b5e08
     Port:          <none>
     Host Port:     <none>
     Args:
@@ -583,43 +618,24 @@ Containers:
       --extra-create-metadata
       --feature-gates=Topology=true
     State:          Running
-      Started:      Wed, 24 Mar 2021 08:30:50 -0400
+      Started:      Tue, 22 Jun 2021 11:28:56 -0400
     Ready:          True
     Restart Count:  0
     Environment:
       ADDRESS:  /var/run/csi/csi.sock
     Mounts:
       /var/run/csi from socket-dir (rw)
-      /var/run/secrets/kubernetes.io/serviceaccount from powerstore-controller-token-v6rbm (ro)
-  snapshotter:
-    Container ID:  docker://3e8369e104de4009640712975be848c0630eff50ae4daf34a75b763d606b641d
-    Image:         k8s.gcr.io/sig-storage/csi-snapshotter:v4.0.0
-    Image ID:      docker-pullable://k8s.gcr.io/sig-storage/csi-snapshotter@sha256:51f2dfde5bccac7854b3704689506aeecfb793328427b91115ba253a93e60782
-    Port:          <none>
-    Host Port:     <none>
-    Args:
-      --csi-address=$(ADDRESS)
-      --v=5
-      --leader-election
-    State:          Running
-      Started:      Wed, 24 Mar 2021 08:31:07 -0400
-    Ready:          True
-    Restart Count:  0
-    Environment:
-      ADDRESS:  /var/run/csi/csi.sock
-    Mounts:
-      /var/run/csi from socket-dir (rw)
-      /var/run/secrets/kubernetes.io/serviceaccount from powerstore-controller-token-v6rbm (ro)
+      /var/run/secrets/kubernetes.io/serviceaccount from powerstore-controller-token-dbsxh (ro)
   driver:
-    Container ID:  docker://6fa0a277d4a9aca1b039893d08e0bb73de74406faa1c4613d25af31414b27f20
-    Image:         dellemc/csi-powerstore:v1.3.0
-    Image ID:      docker-pullable://dellemc/csi-powerstore@sha256:120f7103e6e9ea1f31b94eec3c3fd9f3216b400095dd0140332fcab2060a01cb
+    Container ID:  docker://65ea039a4bb5b0ee1a2d9fc29d2737d067af2bd3af1fdab0d50e0d209a8349fc
+    Image:         dellemc/csi-powerstore:v1.4.0
+    Image ID:      docker-pullable://dellemc/csi-powerstore@sha256:d98c918ac4c40839b67e379fb0711c55bf4ca1c4c7355b323723a29ad8a9bce4
     Port:          <none>
     Host Port:     <none>
     Command:
       /csi-powerstore
     State:          Running
-      Started:      Wed, 24 Mar 2021 08:31:08 -0400
+      Started:      Tue, 22 Jun 2021 11:28:57 -0400
     Ready:          True
     Restart Count:  0
     Environment:
@@ -629,10 +645,11 @@ Containers:
       X_CSI_DRIVER_NAME:                 csi-powerstore.dellemc.com
       X_CSI_POWERSTORE_EXTERNAL_ACCESS:
       X_CSI_POWERSTORE_CONFIG_PATH:      /powerstore-config/config
+      GOPOWERSTORE_DEBUG:                true
     Mounts:
       /powerstore-config from powerstore-config (rw)
       /var/run/csi from socket-dir (rw)
-      /var/run/secrets/kubernetes.io/serviceaccount from powerstore-controller-token-v6rbm (ro)
+      /var/run/secrets/kubernetes.io/serviceaccount from powerstore-controller-token-dbsxh (ro)
 Conditions:
   Type              Status
   Initialized       True
@@ -648,56 +665,46 @@ Volumes:
     Type:        Secret (a volume populated by a Secret)
     SecretName:  powerstore-config
     Optional:    false
-  powerstore-controller-token-v6rbm:
+  powerstore-controller-token-dbsxh:
     Type:        Secret (a volume populated by a Secret)
-    SecretName:  powerstore-controller-token-v6rbm
+    SecretName:  powerstore-controller-token-dbsxh
     Optional:    false
 QoS Class:       BestEffort
 Node-Selectors:  <none>
 Tolerations:     node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
                  node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
 Events:
-  Type    Reason     Age   From               Message
-  ----    ------     ----  ----               -------
-  Normal  Scheduled  12m   default-scheduler  Successfully assigned csi-powerstore/powerstore-controller-7bc455d5c7-g2hlg to node1
-  Normal  Pulling    12m   kubelet            Pulling image "k8s.gcr.io/sig-storage/csi-attacher:v3.1.0"
-  Normal  Pulled     12m   kubelet            Successfully pulled image "k8s.gcr.io/sig-storage/csi-attacher:v3.1.0" in 11.8806569s
-  Normal  Created    12m   kubelet            Created container attacher
-  Normal  Started    12m   kubelet            Started container attacher
-  Normal  Pulling    12m   kubelet            Pulling image "k8s.gcr.io/sig-storage/csi-resizer:v1.1.0"
-  Normal  Pulled     12m   kubelet            Successfully pulled image "k8s.gcr.io/sig-storage/csi-resizer:v1.1.0" in 17.514903292s
-  Normal  Created    12m   kubelet            Created container resizer
-  Normal  Started    12m   kubelet            Started container resizer
-  Normal  Pulling    12m   kubelet            Pulling image "k8s.gcr.io/sig-storage/csi-provisioner:v2.1.0"
-  Normal  Pulled     12m   kubelet            Successfully pulled image "k8s.gcr.io/sig-storage/csi-provisioner:v2.1.0" in 11.993879148s
-  Normal  Created    12m   kubelet            Created container provisioner
-  Normal  Started    12m   kubelet            Started container provisioner
-  Normal  Pulling    12m   kubelet            Pulling image "k8s.gcr.io/sig-storage/csi-snapshotter:v4.0.0"
-  Normal  Pulled     11m   kubelet            Successfully pulled image "k8s.gcr.io/sig-storage/csi-snapshotter:v4.0.0" in 11.539688744s
-  Normal  Created    11m   kubelet            Created container snapshotter
-  Normal  Started    11m   kubelet            Started container snapshotter
-  Normal  Pulling    11m   kubelet            Pulling image "dellemc/csi-powerstore:v1.3.0"
-  Normal  Pulled     11m   kubelet            Successfully pulled image "dellemc/csi-powerstore:v1.3.0" in 651.463929ms
-  Normal  Created    11m   kubelet            Created container driver
-  Normal  Started    11m   kubelet            Started container driver
+  Type    Reason     Age    From               Message
+  ----    ------     ----   ----               -------
+  Normal  Scheduled  8m52s  default-scheduler  Successfully assigned csi-powerstore/powerstore-controller-685ff6cb4b-2fr66 to node1
+  Normal  Pulling    8m51s  kubelet            Pulling image "k8s.gcr.io/sig-storage/csi-attacher:v3.2.1"
+  Normal  Pulled     8m40s  kubelet            Successfully pulled image "k8s.gcr.io/sig-storage/csi-attacher:v3.2.1" in 11.581288208s
+  Normal  Created    8m33s  kubelet            Created container attacher
+  Normal  Started    8m33s  kubelet            Started container attacher
+  Normal  Pulling    8m33s  kubelet            Pulling image "k8s.gcr.io/sig-storage/csi-resizer:v1.2.0"
+  Normal  Pulled     8m16s  kubelet            Successfully pulled image "k8s.gcr.io/sig-storage/csi-resizer:v1.2.0" in 17.25039299s
+  Normal  Pulling    8m14s  kubelet            Pulling image "k8s.gcr.io/sig-storage/csi-provisioner:v2.2.1"
+  Normal  Created    8m14s  kubelet            Created container resizer
+  Normal  Started    8m14s  kubelet            Started container resizer
+  Normal  Pulled     8m2s   kubelet            Successfully pulled image "k8s.gcr.io/sig-storage/csi-provisioner:v2.2.1" in 11.514040919s
+  Normal  Created    8m     kubelet            Created container provisioner
+  Normal  Started    8m     kubelet            Started container provisioner
+  Normal  Pulling    8m     kubelet            Pulling image "dellemc/csi-powerstore:v1.4.0"
+  Normal  Pulled     7m59s  kubelet            Successfully pulled image "dellemc/csi-powerstore:v1.4.0" in 390.546985ms
+  Normal  Created    7m59s  kubelet            Created container driver
+  Normal  Started    7m59s  kubelet            Started container driver
 [root@master dell-csi-helm-installer]#
-[root@master dell-csi-helm-installer]# kubectl describe sc powerstore
-Name:                  powerstore
-IsDefaultClass:        No
-Annotations:           <none>
-Provisioner:           csi-powerstore.dellemc.com
-Parameters:            arrayIP=192.168.1.30
-AllowVolumeExpansion:  True
-MountOptions:          <none>
-ReclaimPolicy:         Delete
-VolumeBindingMode:     Immediate
-Events:                <none>
+
+[root@master dell-csi-helm-installer]# kubectl get sc
+NAME             PROVISIONER                  RECLAIMPOLICY   VOLUMEBINDINGMODE   ALLOWVOLUMEEXPANSION   AGE
+powerstore-xfs   csi-powerstore.dellemc.com   Delete          Immediate           true                   57m
 [root@master dell-csi-helm-installer]# kubectl describe sc powerstore-xfs
-Name:                  powerstore-xfs
-IsDefaultClass:        No
-Annotations:           <none>
+Name:            powerstore-xfs
+IsDefaultClass:  No
+Annotations:     kubectl.kubernetes.io/last-applied-configuration={"allowVolumeExpansion":true,"apiVersion":"storage.k8s.io/v1","kind":"StorageClass","metadata":{"annotations":{},"name":"powerstore-xfs"},"parameters":{"FsType":"xfs","arrayID":"PS04e694d0c442"},"provisioner":"csi-powerstore.dellemc.com","reclaimPolicy":"Delete","volumeBindingMode":"Immediate"}
+
 Provisioner:           csi-powerstore.dellemc.com
-Parameters:            FsType=xfs,arrayIP=192.168.1.30
+Parameters:            FsType=xfs,arrayID=PS04e694d0c442
 AllowVolumeExpansion:  True
 MountOptions:          <none>
 ReclaimPolicy:         Delete
@@ -717,6 +724,17 @@ cli> host show -sort name+ -limit 3
 
 ##SQL test
 for i in {node1,node2,node3}; do ssh $i docker pull mcr.microsoft.com/mssql/rhel/server:2019-latest ; ssh $i docker images ; done
+REPOSITORY                                         TAG           IMAGE ID       CREATED         SIZE
+dellemc/csi-powerstore                             v1.4.0        8bddb808e6ec   4 days ago      253MB
+k8s.gcr.io/kube-proxy                              v1.20.8       358e7e6ecf20   6 days ago      127MB
+mcr.microsoft.com/mssql/rhel/server                2019-latest   31312494c1b6   3 weeks ago     1.54GB
+quay.io/coreos/flannel                             v0.14.0       8522d622299c   5 weeks ago     67.9MB
+k8s.gcr.io/sig-storage/csi-provisioner             v2.2.1        b93fb1bfc551   6 weeks ago     56.4MB
+k8s.gcr.io/sig-storage/csi-attacher                v3.2.1        6de272f18137   6 weeks ago     53.5MB
+k8s.gcr.io/sig-storage/csi-resizer                 v1.2.0        0aa9629e1508   6 weeks ago     54MB
+k8s.gcr.io/sig-storage/csi-node-driver-registrar   v2.2.0        8e5a15e16dca   8 weeks ago     18.7MB
+k8s.gcr.io/coredns                                 1.7.0         bfe3a36ebd25   12 months ago   45.2MB
+k8s.gcr.io/pause                                   3.2           80d28bedfe5d   16 months ago   683kB
 
 [root@master tmp]# kubectl create secret generic mssql --from-literal=SA_PASSWORD="P@ssw0rd!"
 secret/mssql created
@@ -1074,6 +1092,7 @@ azdata bdc upgrade -n mssql-cluster -t 2019-CU5-ubuntu-16.04 -r mcr.microsoft.co
 
 
 issue:
+1)
 [root@master ~]# kubectl get pods -w -n csi-powerstore
 NAME                                     READY   STATUS             RESTARTS   AGE
 powerstore-controller-7bc455d5c7-bn2q9   5/5     Running            184        16h
@@ -1113,4 +1132,66 @@ I0613 02:57:01.070784       1 leaderelection.go:273] successfully renewed lease 
 [root@master ~]# kubectl logs powerstore-controller-7bc455d5c7-5zm85 snapshotter -f
 I0613 02:58:49.876381       1 leaderelection.go:346] lock is held by powerstore-controller-7bc455d5c7-kqlrv and has not yet expired
 I0613 02:58:49.876398       1 leaderelection.go:248] failed to acquire lease csi-powerstore/external-snapshotter-leader-csi-powerstore-dellemc-com
+
+2)csi 1.4.0 driver install issue
+[root@master dell-csi-helm-installer]# ./csi-install.sh --namespace csi-powerstore --values ./my-powerstore-settings.yaml
+...
+...
+|- Verifying helm version                                           Success
+
+------------------------------------------------------
+> Verification Complete - Success
+------------------------------------------------------
+|
+|- Installing Driver                                                Error: template: csi-powerstore/templates/controller.yaml:67:19: executing "csi-powerstore/templates/controller.yaml" at <.Values.replication.enabled>: nil pointer evaluating interface {}.enabled
+
+------------------------------------------------------
+Error: Helm operation failed, output can be found in /tmp/csi-install.127624.out. The failure should be examined, before proceeding. Additionally, running csi-uninstall.sh may be needed to clean up partial deployments.
+Installation cannot continue
+-->fix
+#add "replication" to false!!!
+[root@master dell-csi-helm-installer]# vim my-powerstore-settings.yaml
+...
+replication:
+  enabled: false
+
+3)
+[root@master dell-csi-helm-installer]# kubectl logs -n csi-powerstore powerstore-node-8xhgz driver | grep -i "error\|failed"
+{"level":"error","msg":"iscsi initiators found on node","time":"2021-06-22T16:28:08.568003871Z"}
+{"level":"error","msg":"failed to read initiator ports names: FC is not supported for this host","time":"2021-06-22T16:28:08.568096312Z"}
+{"level":"error","msg":"FC was not found or filtered with FCPortsFilterFile","time":"2021-06-22T16:28:08.568120251Z"}
+{"level":"error","msg":"Get \"https://192.168.1.30/api/rest/host?limit=1000\u0026offset=0\u0026order=name\u0026select=id%2Cname%2Cdescription%2Chost_group_id%2Cimport_host_system_id%2Cos_type%2Ctype%2Chost_initiators\": tls: failed to parse certificate from server: asn1: structure error: integer not minimally-encoded","time":"2021-06-22T16:28:08.619686872Z"}
+{"level":"error","msg":"can't setup host on https://192.168.1.30/api/rest: Get \"https://192.168.1.30/api/rest/host?limit=1000\u0026offset=0\u0026order=name\u0026select=id%2Cname%2Cdescription%2Chost_group_id%2Cimport_host_system_id%2Cos_type%2Ctype%2Chost_initiators\": tls: failed to parse certificate from server: asn1: structure error: integer not minimally-encoded","time":"2021-06-22T16:28:08.619779977Z"}
+{"level":"error","msg":"Get \"https://192.168.1.30/api/rest/ip_pool_address?order=id\u0026purposes=cs.%7BStorage_Iscsi_Target%7D\u0026select=address%2Cappliance_id%2Cid%2Cip_port_id%2Cip_port%28target_iqn%2C+id%29%2Cnetwork_id%2Cnode_id%2Cpurposes\": tls: failed to parse certificate from server: asn1: structure error: integer not minimally-encoded","time":"2021-06-22T16:28:09.493292411Z"}
+{"level":"error","msg":"couldn't get targets from array: Get \"https://192.168.1.30/api/rest/ip_pool_address?order=id\u0026purposes=cs.%7BStorage_Iscsi_Target%7D\u0026select=address%2Cappliance_id%2Cid%2Cip_port_id%2Cip_port%28target_iqn%2C+id%29%2Cnetwork_id%2Cnode_id%2Cpurposes\": tls: failed to parse certificate from server: asn1: structure error: integer not minimally-encoded","time":"2021-06-22T16:28:09.493310476Z"}
+[root@master dell-csi-helm-installer]#
+[root@master dell-csi-helm-installer]# kubectl logs -n csi-powerstore powerstore-controller-685ff6cb4b-g95w6 attacher | grep -i "error\|failed"
+I0622 16:28:08.972809       1 connection.go:186] GRPC error: <nil>
+I0622 16:28:08.973742       1 connection.go:186] GRPC error: <nil>
+I0622 16:28:08.975031       1 connection.go:186] GRPC error: <nil>
+I0622 16:28:08.977185       1 connection.go:186] GRPC error: <nil>
+I0622 16:28:08.978389       1 connection.go:186] GRPC error: <nil>
+I0622 16:28:09.014772       1 leaderelection.go:248] failed to acquire lease csi-powerstore/external-attacher-leader-csi-powerstore-dellemc-com
+I0622 16:28:17.654198       1 leaderelection.go:248] failed to acquire lease csi-powerstore/external-attacher-leader-csi-powerstore-dellemc-com
+[root@master dell-csi-helm-installer]# kubectl logs -n csi-powerstore powerstore-controller-685ff6cb4b-g95w6 provisioner | grep -i "error\|failed"
+I0622 16:28:08.348313       1 connection.go:186] GRPC error: <nil>
+I0622 16:28:08.349898       1 connection.go:186] GRPC error: <nil>
+I0622 16:28:08.351509       1 connection.go:186] GRPC error: <nil>
+I0622 16:28:08.352395       1 connection.go:186] GRPC error: <nil>
+I0622 16:28:08.369140       1 leaderelection.go:248] failed to acquire lease csi-powerstore/csi-powerstore-dellemc-com
+I0622 16:28:19.020188       1 leaderelection.go:248] failed to acquire lease csi-powerstore/csi-powerstore-dellemc-com
+
+[root@master tmp]# kubectl get pvc
+NAME          STATUS    VOLUME   CAPACITY   ACCESS MODES   STORAGECLASS     AGE
+mssql-data    Pending                                      powerstore-xfs   9s
+mssql-data2   Pending                                      powerstore-xfs   9s
+mssql-log2    Pending                                      powerstore-xfs   9s
+[root@master tmp]# kubectl describe pvc mssql-data
+...
+Events:
+  Type     Reason                Age                From                                                                                                    Message
+  ----     ------                ----               ----                                                                                                    -------
+  Normal   Provisioning          14s (x5 over 27s)  csi-powerstore.dellemc.com_powerstore-controller-685ff6cb4b-rkk2q_72dc4dfb-a968-444c-9a81-de775162c97a  External provisioner is provisioning volume for claim "default/mssql-data"
+  Warning  ProvisioningFailed    14s (x5 over 27s)  csi-powerstore.dellemc.com_powerstore-controller-685ff6cb4b-rkk2q_72dc4dfb-a968-444c-9a81-de775162c97a  failed to provision volume with StorageClass "powerstore-xfs": rpc error: code = Internal desc = Array IP's been provided, however it is not supported in current version. Configure you storage classes according to the documentation
+  Normal   ExternalProvisioning  13s (x4 over 29s)  persistentvolume-controller                                                                             waiting for a volume to be created, either by external provisioner "csi-powerstore.dellemc.com" or manually created by system administrator
 
