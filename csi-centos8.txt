@@ -47,9 +47,28 @@ net.ipv4.ip_forward = 1
 192.168.1.22 node2  node2
 192.168.1.23 node3  node3
 
+ssh-keygen -t rsa
+for i in {master,node1,node2,node3}; do ssh-copy-id $i ; done
+cat ~/.ssh/authorized_keys
+cat ~/.ssh/id_rsa.pub
+for i in {master,node1,node2,node3}; do ssh $i sed -i.bak '/swap/s/^/#/' /etc/fstab ; ssh $i swapoff -a; ssh $i free; done
+vi /etc/yum.repos.d/kubernetes.repo
+[root@master ~]# cat /etc/yum.repos.d/kubernetes.repo
+[kubernetes]
+name=Kubernetes
+baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-$basearch
+enabled=1
+gpgcheck=1
+repo_gpgcheck=1
+gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+exclude=kubelet kubeadm kubectl
+
+[root@master ~]# for i in {master,node1,node2,node3}; do ssh $i cat /sys/class/dmi/id/product_uuid; done
 [root@master ~]# for i in {node1,node2,node3}; do ssh $i modprobe br_netfilter ; scp /etc/sysctl.d/k8s.conf $i:/etc/sysctl.d/k8s.conf; ssh $i sysctl -p /etc/sysctl.d/k8s.conf ; done
 [root@master ~]# for i in {master,node1,node2,node3}; do ssh $i systemctl disable firewalld ;  ssh $i systemctl stop firewalld ; done
 
+[root@master ~]# yum list --showduplicates kubeadm --disableexcludes=kubernetes | sort -r
+[root@master ~]# for i in {master,node1,node2,node3}; do ssh $i yum install -y kubelet-1.20.7-0 kubeadm-1.20.7-0 kubectl-1.20.7-0 --disableexcludes=kubernetes ; done
 
 [root@master ~]# for i in {master,node1,node2,node3}; do ssh $i yum module install -y container-tools:2.0  ; done
 [root@master ~]# grep -v "^#\|^$" /etc/containers/registries.conf
@@ -120,9 +139,6 @@ store:
         "Version": "",
             "release": "291",
             "version": "1.3.0"
-
-[root@master ~]# yum list --showduplicates kubeadm --disableexcludes=kubernetes | sort -r
-[root@master ~]# for i in {master,node1,node2,node3}; do ssh $i yum install -y kubelet-1.20.7-0 kubeadm-1.20.7-0 kubectl-1.20.7-0 --disableexcludes=kubernetes ; done
 
 
   128  for i in {master,node1,node2,node3}; do ssh $i podman rmi dellemc/csi-powerstore && podman images ; done
