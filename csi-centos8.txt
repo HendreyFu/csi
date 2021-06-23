@@ -81,6 +81,7 @@ for i in {master,node1,node2,node3}; do ssh-copy-id $i ; done
 cat ~/.ssh/authorized_keys
 cat ~/.ssh/id_rsa.pub
 for i in {master,node1,node2,node3}; do ssh $i sed -i.bak '/swap/s/^/#/' /etc/fstab ; ssh $i swapoff -a; ssh $i free; done
+for i in {master,node1,node2,node3}; do ssh $i setenforce 0 ; ssh $i sed -i 's/^SELINUX=enforcing$/SELINUX=permissive/' /etc/selinux/config ; ssh $i getenforce ; done
 for i in {node1,node2,node3}; do scp /etc/resolv.conf  $i:/etc/resolv.conf; done
 [root@master ~]# for i in {master,node1,node2,node3}; do ssh $i cat /sys/class/dmi/id/product_uuid; done
 [root@master ~]# for i in {node1,node2,node3}; do ssh $i modprobe br_netfilter ; scp /etc/sysctl.d/k8s.conf $i:/etc/sysctl.d/k8s.conf; ssh $i sysctl -p /etc/sysctl.d/k8s.conf ; done
@@ -225,6 +226,7 @@ nmcli conn mod ens224 ipv4.address 192.168.2.220/24 ipv4.method static connectio
   138  kubeadm init --pod-network-cidr=10.244.0.0/16 --apiserver-advertise-address=192.168.1.20
   139  for i in {node1,node2,node3}; do ssh $i kubeadm join 192.168.1.20:6443 --token tkmf3y.x3rzt3m6rtxhwc02 --discovery-token-ca-cert-hash sha256:9823a831616f82a964ae1116b6c6dfeac5c83e865a7205230adc8a0828e18fb8 ; done
   140  systemctl status kubelet
+       for i in {master,node1,node2,node3}; do ssh $i systemctl enable kubelet ; done 
   141  netstat -ntpl
   142  kubectl get nodes
   144  echo "export KUBECONFIG=/etc/kubernetes/admin.conf" >> ~/.bash_profile
