@@ -62,9 +62,7 @@ net.ipv4.ip_forward = 1
 nameserver 192.168.1.50
 
 #install docker on master
-   45  yum install -y yum-utils device-mapper-persistent-data lvm2 bash-completion git vim net-tools
-   46  yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
-   47  vi /etc/resolv.conf
+   45  yum install -y yum-utils device-mapper-persistent-data lvm2 bash-completion git vim net-tools wget
    49  yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
    50  ls /etc/yum.repos.d/
    52  yum makecache
@@ -1195,3 +1193,105 @@ Events:
   Warning  ProvisioningFailed    14s (x5 over 27s)  csi-powerstore.dellemc.com_powerstore-controller-685ff6cb4b-rkk2q_72dc4dfb-a968-444c-9a81-de775162c97a  failed to provision volume with StorageClass "powerstore-xfs": rpc error: code = Internal desc = Array IP's been provided, however it is not supported in current version. Configure you storage classes according to the documentation
   Normal   ExternalProvisioning  13s (x4 over 29s)  persistentvolume-controller                                                                             waiting for a volume to be created, either by external provisioner "csi-powerstore.dellemc.com" or manually created by system administrator
 
+
+4)curl issue
+cluster1 with firmware 1.0.0.0.4.038 have issue.
+cluster2 with firmware 1.0.4.0.5.003 normal !!!
+rhel8 and centos 8.4 same issue, will rhel7 curl is normal !!!
+
+[root@master ~]#  curl -vvv -k --user admin:P@ssw0rd! https://192.168.1.30/api/rest/cluster?select=*
+*   Trying 192.168.1.30...
+* TCP_NODELAY set
+* Connected to 192.168.1.30 (192.168.1.30) port 443 (#0)
+* ALPN, offering h2
+* ALPN, offering http/1.1
+* successfully set certificate verify locations:
+*   CAfile: /etc/pki/tls/certs/ca-bundle.crt
+  CApath: none
+* TLSv1.3 (OUT), TLS handshake, Client hello (1):
+* TLSv1.3 (IN), TLS handshake, Server hello (2):
+* TLSv1.2 (IN), TLS handshake, Certificate (11):
+* TLSv1.2 (OUT), TLS alert, bad certificate (554):
+* error:0D0E20DD:asn1 encoding routines:c2i_ibuf:illegal padding
+* Closing connection 0
+curl: (35) error:0D0E20DD:asn1 encoding routines:c2i_ibuf:illegal padding
+[root@master ~]#
+
+[root@master ~]#  curl -vvv -k --user admin:P@ssw0rd! https://192.168.1.40/api/rest/cluster?select=*
+*   Trying 192.168.1.40...
+* TCP_NODELAY set
+* Connected to 192.168.1.40 (192.168.1.40) port 443 (#0)
+* ALPN, offering h2
+* ALPN, offering http/1.1
+* successfully set certificate verify locations:
+*   CAfile: /etc/pki/tls/certs/ca-bundle.crt
+  CApath: none
+* TLSv1.3 (OUT), TLS handshake, Client hello (1):
+* TLSv1.3 (IN), TLS handshake, Server hello (2):
+* TLSv1.2 (IN), TLS handshake, Certificate (11):
+* TLSv1.2 (IN), TLS handshake, Server key exchange (12):
+* TLSv1.2 (IN), TLS handshake, Request CERT (13):
+* TLSv1.2 (IN), TLS handshake, Server finished (14):
+* TLSv1.2 (OUT), TLS handshake, Certificate (11):
+* TLSv1.2 (OUT), TLS handshake, Client key exchange (16):
+* TLSv1.2 (OUT), TLS change cipher, Change cipher spec (1):
+* TLSv1.2 (OUT), TLS handshake, Finished (20):
+* TLSv1.2 (IN), TLS handshake, Finished (20):
+* SSL connection using TLSv1.2 / ECDHE-RSA-AES256-GCM-SHA384
+* ALPN, server did not agree to a protocol
+* Server certificate:
+*  subject: C=US + O=Dell + L=Hopkinton + OU=PowerStore + ST=Massachusetts + CN=ManagementHTTP.PSec370360bc60
+*  start date: Jun 21 03:11:23 2021 GMT
+*  expire date: Jun 20 03:11:23 2026 GMT
+*  issuer: C=US; ST=MA; O=Dell EMC; CN=Dell EMC PowerStore CA YZ4USM9E
+*  SSL certificate verify result: self signed certificate in certificate chain (19), continuing anyway.
+* Server auth using Basic with user 'admin'
+> GET /api/rest/cluster?select=* HTTP/1.1
+> Host: 192.168.1.40
+> Authorization: Basic YWRtaW46UEBzc3cwcmQh
+> User-Agent: curl/7.61.1
+> Accept: */*
+>
+< HTTP/1.1 200 OK
+< DELL-EMC-TOKEN: IhJC/04NmCqSmLQxvgyVSsnebB8A/0qHDa+K3LkhXJY=
+< Content-Type: application/json
+< transfer-encoding: chunked
+< content-language: en-US
+< set-cookie: auth_cookie=dae0401ca49609c01f6102c5f9fa5191; Path=/; Secure; HTTPOnly
+<
+* Connection #0 to host 192.168.1.40 left intact
+[{"id":"0","global_id":"PSec370360bc60","name":"POD3-Cluster2","physical_mtu":1500,"master_appliance_id":"A1","state":"Configured","appliance_count":1,"management_address":"192.168.1.40","is_encryption_enabled":true,"storage_discovery_address":"192.168.2.40","compatibility_level":1,"state_l10n":"Configured"}]
+[root@master ~]#
+
+
+[root@linux17 ~]# curl -vvv -k --user admin:P@ssw0rd! https://192.168.1.30/api/rest/cluster?select=*
+* About to connect() to 192.168.1.30 port 443 (#0)
+*   Trying 192.168.1.30...
+* Connected to 192.168.1.30 (192.168.1.30) port 443 (#0)
+* Initializing NSS with certpath: sql:/etc/pki/nssdb
+* skipping SSL peer certificate verification
+* NSS: client certificate not found (nickname not specified)
+* SSL connection using TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+* Server certificate:
+*       subject: C=US+O=Dell+L=Hopkinton+OU=PowerStore+ST=Massachusetts+CN=ManagementHTTP.PS04e694d0c442
+*       start date: Jun 21 03:09:45 2021 GMT
+*       expire date: Jun 20 03:09:45 2026 GMT
+*       common name: ManagementHTTP.PS04e694d0c442
+*       issuer: CN=Dell EMC PowerStore CA ZTUGYPNK,O=Dell EMC,ST=MA,C=US
+* Server auth using Basic with user 'admin'
+> GET /api/rest/cluster?select=* HTTP/1.1
+> Authorization: Basic YWRtaW46UEBzc3cwcmQh
+> User-Agent: curl/7.29.0
+> Host: 192.168.1.30
+> Accept: */*
+>
+< HTTP/1.1 200 OK
+< DELL-EMC-TOKEN: IrfmhMXOORUkBZ0RGzAPV1AK+O07s5uRbULnslrRr8s=
+< Content-Type: application/json
+< transfer-encoding: chunked
+< content-language: en-US
+< set-cookie: auth_cookie=b5557d07ba1347883106689382b97a74; Path=/; Secure; HTTPOnly
+<
+* Connection #0 to host 192.168.1.30 left intact
+[{"id":"0","global_id":"PS04e694d0c442","name":"POD3-Cluster1","physical_mtu":1500,"master_appliance_id":"A1","state":"Configured","appliance_count":1,"management_address":"192.168.1.30","is_encryption_enabled":true,"storage_discovery_address":"192.168.2.30","compatibility_level":1,"state_l10n":"Configured"}]
+[root@linux17 ~]#
