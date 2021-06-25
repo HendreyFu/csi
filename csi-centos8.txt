@@ -1031,6 +1031,11 @@ total 4.1G
 bash-4.4$ ls -hl log2/
 total 1.0G
 -rw-r-----. 1 mssql 10001 1.0G Jun 25 13:42 TestDB_log.ldf
+bash-4.4$ ls -hl data
+total 735M
+-rw-r-----. 1 mssql 10001  256 Jun 25 13:27 Entropy.bin
+-rw-r-----. 1 mssql 10001 328M Jun 25 16:19 SampleDB.mdf
+-rw-r-----. 1 mssql 10001 328M Jun 25 16:38 SampleDB_log.ldf
 bash-4.4$ df -H
 Filesystem                                                                                                     Size  Used Avail Use% Mounted on
 overlay                                                                                                         67G  5.9G   61G   9% /
