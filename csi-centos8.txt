@@ -749,6 +749,8 @@ mssql                               Opaque                                1     
 [root@master tmp]# mkdir sql
 [root@master tmp]# wget https://raw.githubusercontent.com/HendreyFu/csi/main/pvc.yaml -O /tmp/sql/pvc.yaml
 [root@master tmp]# wget https://raw.githubusercontent.com/HendreyFu/csi/main/sql.yaml -O /tmp/sql/sql.yaml
+[root@master tmp]# wget https://raw.githubusercontent.com/HendreyFu/csi/main/CSNoIndex.sql -O sql/CSNoIndex.sql
+[root@master tmp]# wget https://raw.githubusercontent.com/HendreyFu/csi/main/CSIndex.sql -O sql/CSIndex.sql
 [root@master tmp]# vim sql/pvc.yaml
 [root@master tmp]# kubectl create -f sql/pvc.yaml
 persistentvolumeclaim/mssql-data created
@@ -885,8 +887,20 @@ mssql-deployment   NodePort   10.108.193.217   <none>        1433:31690/TCP   41
 NAME                                    READY   STATUS    RESTARTS   AGE    IP             NODE          NOMINATED NODE   READINESS GATES
 mssql-deployment-5f4cd94964-hs774       1/1     Running   0          10m    10.244.1.6     node1.local   <none>           <none>
 
+[root@master sql]# kubectl cp /tmp/sql/ mssql-deployment-5f4cd94964-hs774:/tmp/
+
 [root@master tmp]# kubectl exec -it mssql-deployment-5f4cd94964-hs774 bash
 kubectl exec [POD] [COMMAND] is DEPRECATED and will be removed in a future version. Use kubectl exec [POD] -- [COMMAND] instead.
+bash-4.4$ /opt/mssql-tools/bin/sqlcmd -S localhost,1433 -U sa -P P@ssw0rd! -Q "select @@version"
+                                                                                                                                                             
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Microsoft SQL Server 2019 (RTM-CU11) (KB5003249) - 15.0.4138.2 (X64)
+        May 27 2021 17:34:14
+        Copyright (C) 2019 Microsoft Corporation
+        Developer Edition (64-bit) on Linux (Red Hat Enterprise Linux 8.3 (Ootpa)) <X64>                                                                     
+
+(1 rows affected)
+
 bash-4.4$ /opt/mssql-tools/bin/sqlcmd -S localhost,1433 -U sa -P P@ssw0rd!
 1> select @@VERSION as Version, SERVERPROPERTY('ServerName') as 'Container ID', SERVERPROPERTY('Edition') as Edition;
 2> go
@@ -909,6 +923,99 @@ id          name                                               quantity
 
 (1 rows affected)
 1>exit
+
+//The aggregation query over 5 million rows with SQL optimizer option to ignore columnstore index
+SELECT SUM(Price), AVG(Price) FROM Orders;
+bash-4.4$ /opt/mssql-tools/bin/sqlcmd -S localhost,1433 -U sa -P P@ssw0rd! -i /tmp/sql/CSNoIndex.sql
+Changed database context to 'SampleDB'.
+DBCC execution completed. If DBCC printed error messages, contact your system administrator.
+
+----------- -----------
+   50000000          10
+Not using columnstore index: 960 ms
+
+----------- -----------
+   50000000          10
+Not using columnstore index: 826 ms
+
+----------- -----------
+   50000000          10
+Not using columnstore index: 822 ms
+
+----------- -----------
+   50000000          10
+Not using columnstore index: 701 ms
+
+----------- -----------
+   50000000          10
+Not using columnstore index: 716 ms
+
+----------- -----------
+   50000000          10
+Not using columnstore index: 713 ms
+
+----------- -----------
+   50000000          10
+Not using columnstore index: 885 ms
+
+----------- -----------
+   50000000          10
+Not using columnstore index: 766 ms
+
+----------- -----------
+   50000000          10
+Not using columnstore index: 789 ms
+
+----------- -----------
+   50000000          10
+Not using columnstore index: 830 ms
+
+//The aggregation query over 5 million rows
+bash-4.4$ /opt/mssql-tools/bin/sqlcmd -S localhost,1433 -U sa -P P@ssw0rd! -i /tmp/sql/CSIndex.sql
+Changed database context to 'SampleDB'.
+DBCC execution completed. If DBCC printed error messages, contact your system administrator.
+
+----------- -----------
+   50000000          10
+Using nonclustered columnstore index: 121 ms
+
+----------- -----------
+   50000000          10
+Using nonclustered columnstore index: 4 ms
+
+----------- -----------
+   50000000          10
+Using nonclustered columnstore index: 9 ms
+
+----------- -----------
+   50000000          10
+Using nonclustered columnstore index: 4 ms
+
+----------- -----------
+   50000000          10
+Using nonclustered columnstore index: 4 ms
+
+----------- -----------
+   50000000          10
+Using nonclustered columnstore index: 5 ms
+
+----------- -----------
+   50000000          10
+Using nonclustered columnstore index: 8 ms
+
+----------- -----------
+   50000000          10
+Using nonclustered columnstore index: 7 ms
+
+----------- -----------
+   50000000          10
+Using nonclustered columnstore index: 8 ms
+
+----------- -----------
+   50000000          10
+Using nonclustered columnstore index: 4 ms
+bash-4.4$
+
 
 bash-4.4$ cd /var/opt/mssql/
 bash-4.4$ ls -l
