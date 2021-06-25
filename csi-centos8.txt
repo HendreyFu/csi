@@ -794,6 +794,21 @@ cli> volume show -sort name+ -limit 3
   1 | 4bdb1237-6502-470c-9671-b84495a02426 | csi-115a96149c | Primary | naa.68ccf0980008ba33c40ecd501d0108~ | 10737418240 (10.00G) |
   2 | 053058e6-b839-4542-87b4-b7fd4240a0cc | csi-1b60e606af | Primary | naa.68ccf09800523f509ddeca42e919df~ | 2147483648 (2.00G)   |
   3 | 37676fa0-f7dd-4d2a-835b-ad935baa798d | csi-3962f2348e | Primary | naa.68ccf09800fa3ff3516f641b726594~ | 5368709120 (5.00G)   |
+cli> job show -sort resource_name+ -limit 10
+ #  |                  id                  | resourc~ |    resource_name     | description_l~ |   state   |   start_time   |    end_time    | progress_pe~
+----+--------------------------------------+----------+----------------------+----------------+-----------+----------------+----------------+--------------
+  1 | 38aab931-340a-4c0f-b5c5-f1d132c72f2e | volume   | csi-115a96149c       | Create a volu~ | FAILED    | 06/25/2021 09~ | 06/25/2021 09~ |          100
+  2 | 73af6083-92d1-450d-98a8-d9f3e6569a27 | volume   | csi-115a96149c       | Create a volu~ | COMPLETED | 06/25/2021 09~ | 06/25/2021 09~ |          100
+  3 | 404d9bfe-4ecc-4f8b-824f-9ca629123ebd | volume   | csi-1b60e606af       | Create a volu~ | FAILED    | 06/25/2021 09~ | 06/25/2021 09~ |          100
+  4 | 4df24f6a-1246-4db8-81e4-df160b437747 | volume   | csi-1b60e606af       | Create a volu~ | COMPLETED | 06/25/2021 09~ | 06/25/2021 09~ |          100
+  5 | a0f3e08e-d157-442d-a72f-9f02ea571fe6 | volume   | csi-3962f2348e       | Create a volu~ | COMPLETED | 06/25/2021 09~ | 06/25/2021 09~ |          100
+  6 | df706671-dd43-4162-8e96-1c835b9914be | volume   | csi-3962f2348e       | Create a volu~ | FAILED    | 06/25/2021 09~ | 06/25/2021 09~ |          100
+  7 | f43d9ebc-624b-4302-b945-d95324f2dd13 | host     | csi-node-node1.loca~ | Attach volume~ | COMPLETED | 06/25/2021 09~ | 06/25/2021 09~ |          100
+  8 | 72341901-c28d-497b-8140-8db83f42a05a | host     | csi-node-node1.loca~ | Create host.   | COMPLETED | 06/25/2021 07~ | 06/25/2021 07~ |          100
+  9 | 017510df-c156-4310-a3e4-c8aadd4abf97 | host     | csi-node-node1.loca~ | Attach volume~ | COMPLETED | 06/25/2021 09~ | 06/25/2021 09~ |          100
+ 10 | 9da311b1-fab8-4523-9869-35dfba779b23 | host     | csi-node-node1.loca~ | Attach volume~ | COMPLETED | 06/25/2021 09~ | 06/25/2021 09~ |          100
+cli>
+
 cli> exit
 
 [root@master tmp]# kubectl describe pv csi-115a96149c
