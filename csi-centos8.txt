@@ -1167,6 +1167,15 @@ cli>
 SQL Server 2019 Big Data Clusters
 https://www.youtube.com/watch?v=syFE77B6d14
 
+Baremetal or VM hardware:
+VM hardware       Value
+CPU               8
+Memory            64 GB
+New Hard disk     100 GB
+New Network       Name of port group created for workload traffic per PowerStore configuration instructions 
+Configuration
+Parameter         disk.EnableUUID=TRUE
+
 [root@master sql]# cat /etc/yum.conf
 [main]
 gpgcheck=1
