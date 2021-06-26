@@ -1336,6 +1336,19 @@ azdata bdc endpoint list -e sql-server-master
 Azure Data Studio (launch GUI console, connect to bdc "xxxip,31433)
 https://docs.microsoft.com/en-us/sql/big-data-cluster/connect-to-big-data-cluster?view=sql-server-ver15
 
+#delete BDC
+[root@master ~]# azdata bdc delete --name mssql-cluster --force
+
+This operation will delete everything inside of cluster "mssql-cluster"
+which includes the SQL Server containers, Kubernetes secrets and services,
+and HDFS containers. Data stored on persistent volumes will get deleted if
+the storage class reclaim policy is set to delete/recycle.
+Namespace "mssql-cluster" and other objects created outside of Big Data Cluster
+will not be dropped.
+
+Deleting cluster 'mssql-cluster'.
+Cluster 'mssql-cluster' deleted successfully.
+
 #BDC Architecture
 https://www.youtube.com/watch?v=GvOo-VV7-p4
 Control Plane
