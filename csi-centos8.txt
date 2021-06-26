@@ -1113,12 +1113,69 @@ recommand use Environment variables:
 https://docs.microsoft.com/en-us/sql/linux/sql-server-linux-configure-environment-variables?view=sql-server-ver15
 https://www.sqlshack.com/configure-sql-server-2017-linux-mssql-conf-available-tools/
 
+#delete sql pods and pvc
+[root@master tmp]# kubectl delete -f sql/sql.yaml
+deployment.apps "mssql-deployment" deleted
+service "mssql-deployment" deleted
+[root@master tmp]# kubectl delete -f sql/pvc.yaml
+persistentvolumeclaim "mssql-data" deleted
+persistentvolumeclaim "mssql-data2" deleted
+persistentvolumeclaim "mssql-log2" deleted
+[root@master tmp]# kubectl get pvc
+No resources found in csi-powerstore namespace.
+[root@master tmp]# kubectl get pv
+No resources found
+
+cli> job show -sort start_time- -limit 30
+ #  |                  id                  | reso~ | resource_n~ |         description_l10n         | state  | start_t~ | end_time | progre~
+----+--------------------------------------+-------+-------------+----------------------------------+--------+----------+----------+---------
+  1 | 99b33d26-44e2-449b-924e-e351d7624ac7 |       |             | Detaching                        | PENDI~ |          |          |       0
+  2 | 9e9eda82-78b4-4252-8458-15741c97aa14 |       |             | Waiting for Detach               | PENDI~ |          |          |       0
+  3 | 2515482d-a5f4-4fd4-9f4f-d00d73c91be1 |       |             | Waiting for Detach               | PENDI~ |          |          |       0
+  4 | dc81be97-656d-4991-bfeb-6484bc71d465 |       |             | Detaching                        | PENDI~ |          |          |       0
+  5 | d3d3a464-34c0-4b56-b353-0ce16d28049d |       |             | Waiting for Detach               | PENDI~ |          |          |       0
+  6 | c92cf2bc-5648-41bf-b36d-1c8457854873 |       |             | Detaching                        | PENDI~ |          |          |       0
+  7 | 2c028595-ff4a-4492-9ef1-67a8ae89aea0 |       |             | Waiting for Detach               | PENDI~ |          |          |       0
+  8 | e46143cc-c234-4f53-8ed8-ec2c2a052aff |       |             | Detaching                        | PENDI~ |          |          |       0
+  9 | 108027e2-2e28-4358-b2ea-bf9597e6da15 | volu~ | csi-115a96~ | Delete a volume.                 | COMPL~ | 06/26/2~ | 06/26/2~ |     100
+ 10 | 84ee562d-f11a-4166-9733-506d352a84bd | volu~ | csi-1b60e6~ | Delete a volume.                 | COMPL~ | 06/26/2~ | 06/26/2~ |     100
+ 11 | 5c92827c-4466-4849-9b75-a12f344e5b4b | volu~ | csi-3962f2~ | Delete a volume.                 | COMPL~ | 06/26/2~ | 06/26/2~ |     100
+ 12 | 62f2d0ac-b74b-45c5-9567-0a05d903f97a |       |             | Validating                       | COMPL~ | 06/26/2~ | 06/26/2~ |     100
+ 13 | 8995c7c0-0629-4e6c-9c50-8bc928037cfa |       |             | Retrieving Objects               | COMPL~ | 06/26/2~ | 06/26/2~ |     100
+ 14 | 015bd3a6-13e9-427c-8834-4b6a5ad9ffff |       |             | Detaching Host 17aa8ad2-2da1-40~ | COMPL~ | 06/26/2~ | 06/26/2~ |     100
+ 15 | 3811a07b-471b-4d2a-aa44-5b9f0f9acb34 | host  | csi-node-n~ | Detach volume from host.         | FAILED | 06/26/2~ | 06/26/2~ |     100
+ 16 | cb5b2d32-3047-459d-bacd-2ff69001c17a |       |             | Validating                       | COMPL~ | 06/26/2~ | 06/26/2~ |     100
+ 17 | 92b07e18-a608-44c9-ab0c-30f939d7b74e |       |             | Retrieving Objects               | COMPL~ | 06/26/2~ | 06/26/2~ |     100
+ 18 | db29653b-d98c-4de9-9a63-8176fe4d3c93 |       |             | Detaching Host 17aa8ad2-2da1-40~ | COMPL~ | 06/26/2~ | 06/26/2~ |     100
+ 19 | 7a522a09-d2a3-4de6-aa16-94cbb26acf0d | host  | csi-node-n~ | Detach volume from host.         | FAILED | 06/26/2~ | 06/26/2~ |     100
+ 20 | c9d4c164-cacd-4e6b-ae23-a8dc425608e1 |       |             | Waiting for Detach               | COMPL~ | 06/26/2~ | 06/26/2~ |     100
+ 21 | a4457590-faea-4c78-b29c-f0e6e2e74aa1 |       |             | Waiting for Detach               | COMPL~ | 06/26/2~ | 06/26/2~ |     100
+ 22 | d0579ddd-9689-4aae-a430-6eacfa0d920c |       |             | Detaching                        | COMPL~ | 06/26/2~ | 06/26/2~ |     100
+ 23 | b607c34a-97d6-483c-ac1d-085ccfea700e |       |             | Detaching                        | COMPL~ | 06/26/2~ | 06/26/2~ |     100
+ 24 | 1492b383-fd10-44da-afa9-ff7c75dc9e0e |       |             | Waiting for Detach               | COMPL~ | 06/26/2~ | 06/26/2~ |     100
+ 25 | 309abad2-31dd-4309-90a7-fa6bc807f4c7 |       |             | Detaching                        | COMPL~ | 06/26/2~ | 06/26/2~ |     100
+ 26 | 95b7915f-458d-483c-b39a-65a978227b18 |       |             | Validating                       | COMPL~ | 06/26/2~ | 06/26/2~ |     100
+ 27 | 60e51fc7-df8e-4b3e-a3bd-1487747824ae |       |             | Validating                       | COMPL~ | 06/26/2~ | 06/26/2~ |     100
+ 28 | 66b845a4-1a68-450c-8f6a-dc7474ca251c |       |             | Validating                       | COMPL~ | 06/26/2~ | 06/26/2~ |     100
+ 29 | fdd2293a-8c50-461a-8a17-c2ec88599c84 |       |             | Retrieving Objects               | COMPL~ | 06/26/2~ | 06/26/2~ |     100
+ 30 | 9cf226be-dc97-42f7-ac51-60c913b7dc9b |       |             | Retrieving Objects               | COMPL~ | 06/26/2~ | 06/26/2~ |     100
+cli>
 
 
 
 ##SQL BDC Cluster Deployment
 SQL Server 2019 Big Data Clusters
 https://www.youtube.com/watch?v=syFE77B6d14
+
+[root@master sql]# cat /etc/yum.conf
+[main]
+gpgcheck=1
+installonly_limit=3
+clean_requirements_on_remove=True
+best=True
+skip_if_unavailable=False
+sslverify=false
+[root@master sql]# yum module install -y python36
 
 [root@master tmp]# useradd stack
 [root@master tmp]# echo redhat | passwd stack --stdin
@@ -1146,18 +1203,19 @@ gpgkey=https://packages.microsoft.com/keys/microsoft.asc
 [stack@master ~]$
 [stack@master ~]$ sudo yum -y install azdata-cli
 [stack@master ~]$ azdata --version
-20.3.1
+20.3.5
 
-Build (20210226.1)
+Build (20210609.2)
 
-SQL Server 2019 (15.0.4100)
+SQL Server 2019 (15.0.4138)
 
 Legal docs and information: https://aka.ms/eula-azdata-en
 
-Python (Linux) 3.6.8 (default, Aug 24 2020, 17:57:11)
-[GCC 8.3.1 20191121 (Red Hat 8.3.1-5)]
+Python (Linux) 3.6.8 (default, Mar 19 2021, 05:13:41)
+[GCC 8.4.1 20200928 (Red Hat 8.4.1-1)]
 
 Python location '/usr/bin/python3'
+
 
 [stack@master ~]$ azdata bdc config list
 The privacy statement can be viewed at:
@@ -1177,8 +1235,7 @@ Do you accept the license terms? (y/n): y
   "openshift-dev-test",
   "openshift-prod"
 ]
-[stack@master ~]$ azdata bdc config init --source kubeadm-dev-test --target custom
-Option '--target' has been deprecated and will be removed in a future release. Use '--path' instead.
+[stack@master ~]$ azdata bdc config init --source kubeadm-dev-test --path custom
 "Created configuration profile in custom"
 [stack@master ~]$ vi custom/control.json
 [stack@master ~]$ cat custom/control.json
@@ -1228,6 +1285,13 @@ Option '--target' has been deprecated and will be removed in a future release. U
     },
     "security": {}
 }
+[stack@master ~]$ grep -i memory custom/bdc.json
+                    "spark-defaults-conf.spark.driver.memory": "1664m",
+                    "spark-defaults-conf.spark.driver.memoryOverhead": "384",
+                    "spark-defaults-conf.spark.executor.memory": "3712m",
+                    "spark-defaults-conf.spark.executor.memoryOverhead": "384",
+                    "yarn-site.yarn.nodemanager.resource.memory-mb": "6044",
+
 [stack@master ~]$exit
 
 [root@master tmp]# cp -a /home/stack/custom/ ./
@@ -1622,3 +1686,26 @@ curl: (35) error:0D0E20DD:asn1 encoding routines:c2i_ibuf:illegal padding
 * Connection #0 to host 192.168.1.40 left intact
 [{"id":"0","global_id":"PSec370360bc60","name":"POD3-Cluster2","physical_mtu":1500,"master_appliance_id":"A1","state":"Configured","appliance_count":1,"management_address":"192.168.1.40","is_encryption_enabled":true,"storage_discovery_address":"192.168.2.40","compatibility_level":1,"state_l10n":"Configured"}]
 
+5)azdata install issue
+[root@master sql]# yum list azdata-cli
+packages-microsoft-com-prod                                                                                                  0.0  B/s |   0  B     00:00
+Errors during downloading metadata for repository 'packages-microsoft-com-prod':
+  - Curl error (60): Peer certificate cannot be authenticated with given CA certificates for https://packages.microsoft.com/rhel/8/prod/repodata/repomd.xml [SSL certificate problem: self signed certificate in certificate chain]
+Error: Failed to download metadata for repo 'packages-microsoft-com-prod': Cannot download repomd.xml: Cannot download repodata/repomd.xml: All mirrors were tried
+
+-->fix
+add "sslverify=false" to /etc/yum.conf
+[root@master sql]# cat /etc/yum.conf
+[main]
+gpgcheck=1
+installonly_limit=3
+clean_requirements_on_remove=True
+best=True
+skip_if_unavailable=False
+sslverify=false
+
+[root@master sql]# yum list azdata-cli
+packages-microsoft-com-prod                                                                                                  6.2 MB/s | 7.5 MB     00:01
+Last metadata expiration check: 0:00:19 ago on Fri 25 Jun 2021 11:52:48 PM EDT.
+Available Packages
+azdata-cli.x86_64                                                  20.3.5-1.el7                                                   packages-microsoft-com-prod
