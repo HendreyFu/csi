@@ -214,6 +214,10 @@ nmcli conn show
 nmcli connection modify "Wired connection 1" con-name ens224 ifname ens224
 nmcli conn mod ens224 ipv4.address 192.168.2.220/24 ipv4.method static connection.autoconnect yes && nmcli con up ens224 && nmcli con show
 
+#change all node cgroup-driver=cgroupfs
+vi /usr/lib/systemd/system/kubelet.service.d/10-kubeadm.conf
+Environment="KUBELET_KUBECONFIG_ARGS=...  --kubeconfig=/etc/kubernetes/kubelet.conf --cgroup-driver=cgroupfs"
+
   138  kubeadm init --pod-network-cidr=10.244.0.0/16 --apiserver-advertise-address=192.168.1.20
   139  for i in {node1,node2,node3}; do ssh $i kubeadm join 192.168.1.20:6443 --token tkmf3y.x3rzt3m6rtxhwc02 --discovery-token-ca-cert-hash sha256:9823a831616f82a964ae1116b6c6dfeac5c83e865a7205230adc8a0828e18fb8 ; done
   140  systemctl status kubelet
@@ -228,9 +232,10 @@ nmcli conn mod ens224 ipv4.address 192.168.2.220/24 ipv4.method static connectio
   149  vi ~/.vimrc
   150  vim /etc/kubernetes/manifests/kube-controller-manager.yaml     //delete --port=0 line!!
   151  vim /etc/kubernetes/manifests/kube-scheduler.yaml
-  152  kubectl get cs
-  153  kubectl cluster-info
-  154  kubectl get nodes
+  152  systemctl restart kubelet
+  153  kubectl get cs
+  154  kubectl cluster-info
+  155  kubectl get nodes
 [root@master ~]# kubectl get nodes
 NAME           STATUS   ROLES                  AGE     VERSION
 master.local   Ready    control-plane,master   12m   v1.21.2
