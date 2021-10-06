@@ -1181,6 +1181,8 @@ cli>
 ##SQL BDC Cluster Deployment
 SQL Server 2019 Big Data Clusters
 https://www.youtube.com/watch?v=syFE77B6d14
+Deploying SQL Server Big Data Clusters - Ben Weissman
+https://www.youtube.com/watch?v=H_HA4zteg6k
 
 Baremetal or VM hardware:
 VM hardware       Value
