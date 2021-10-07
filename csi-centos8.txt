@@ -1316,7 +1316,7 @@ Do you accept the license terms? (y/n): y
                     "spark-defaults-conf.spark.driver.memoryOverhead": "384",
                     "spark-defaults-conf.spark.executor.memory": "3712m",
                     "spark-defaults-conf.spark.executor.memoryOverhead": "384",
-                    "yarn-site.yarn.nodemanager.resource.memory-mb": "6044",
+                    "yarn-site.yarn.nodemanager.resource.memory-mb": "12288",
 
 [stack@master ~]$exit
 
