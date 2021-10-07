@@ -1275,7 +1275,7 @@ Do you accept the license terms? (y/n): y
         "docker": {
             "registry": "mcr.microsoft.com",
             "repository": "mssql/bdc",
-            "imageTag": "2019-CU9-ubuntu-16.04",
+            "imageTag": "2019-CU13-ubuntu-20.04",
             "imagePullPolicy": "IfNotPresent"
         },
         "storage": {
@@ -1346,10 +1346,130 @@ configuration, network speed, and the number of nodes in the cluster.
 
 Starting cluster deployment.
 Waiting for cluster controller to start.
-...
+Waiting for cluster controller to start.
+Waiting for cluster controller to start.
+Waiting for cluster controller to start.
+Waiting for cluster controller to start.
+Cluster controller endpoint is available at 192.168.1.21:30080.
+Cluster control plane is ready.
+Master pool is ready.
+Compute pool is ready.
+Cluster 'mssql-cluster' is not ready after 15.0 minutes. Check controller logs for more details.
+Data pool is ready.
+Storage pool is ready.
+Cluster 'mssql-cluster' deployed successfully.
 
 [root@master tmp]# kubectl get pods -n mssql-cluster
 [root@master tmp]# kubectl get pvc -n mssql-cluster -L app,plane,role,type
+
+[root@master tmp]# kubectl get pods
+NAME              READY   STATUS    RESTARTS   AGE
+appproxy-hcmw6    2/2     Running   0          28m
+compute-0-0       3/3     Running   0          28m
+control-cr5qx     3/3     Running   0          34m
+controldb-0       2/2     Running   0          31m
+controlwd-6ch6m   1/1     Running   0          31m
+data-0-0          3/3     Running   0          28m
+data-0-1          3/3     Running   0          28m
+gateway-0         2/2     Running   0          28m
+logsdb-0          1/1     Running   0          31m
+logsui-bw5lj      1/1     Running   0          31m
+master-0          3/3     Running   0          28m
+metricsdb-0       1/1     Running   0          31m
+metricsdc-2fs6x   1/1     Running   0          31m
+metricsdc-l7tl4   1/1     Running   0          31m
+metricsdc-txdtg   1/1     Running   0          31m
+metricsui-s5clm   1/1     Running   0          31m
+mgmtproxy-m9mt6   2/2     Running   0          31m
+nmnode-0-0        2/2     Running   0          28m
+sparkhead-0       4/4     Running   0          28m
+storage-0-0       4/4     Running   0          28m
+storage-0-1       4/4     Running   0          28m
+[root@master tmp]# kubectl get pvc
+NAME               STATUS   VOLUME              CAPACITY   ACCESS MODES   STORAGECLASS     AGE
+data-compute-0-0   Bound    csivol-c75c006aaf   15Gi       RWO            powerstore-xfs   28m
+data-controldb     Bound    csivol-11c4d435da   15Gi       RWO            powerstore-xfs   34m
+data-controller    Bound    csivol-be231d8552   15Gi       RWO            powerstore-xfs   34m
+data-data-0-0      Bound    csivol-120472a175   15Gi       RWO            powerstore-xfs   28m
+data-data-0-1      Bound    csivol-9f7930430d   15Gi       RWO            powerstore-xfs   28m
+data-gateway-0     Bound    csivol-6b488ba678   15Gi       RWO            powerstore-xfs   28m
+data-logsdb-0      Bound    csivol-4249d1eeac   15Gi       RWO            powerstore-xfs   31m
+data-master-0      Bound    csivol-0a44263783   15Gi       RWO            powerstore-xfs   28m
+data-metricsdb-0   Bound    csivol-25a1ad5afd   15Gi       RWO            powerstore-xfs   31m
+data-nmnode-0-0    Bound    csivol-6c56fb8dcf   15Gi       RWO            powerstore-xfs   28m
+data-sparkhead-0   Bound    csivol-0f758e4ef2   15Gi       RWO            powerstore-xfs   28m
+data-storage-0-0   Bound    csivol-b549834bbc   15Gi       RWO            powerstore-xfs   28m
+data-storage-0-1   Bound    csivol-143675ca34   15Gi       RWO            powerstore-xfs   28m
+logs-compute-0-0   Bound    csivol-f822089d6d   10Gi       RWO            powerstore-xfs   28m
+logs-controldb     Bound    csivol-262f3f3d89   10Gi       RWO            powerstore-xfs   34m
+logs-controller    Bound    csivol-38735eaca3   10Gi       RWO            powerstore-xfs   34m
+logs-data-0-0      Bound    csivol-deb9cdf0c0   10Gi       RWO            powerstore-xfs   28m
+logs-data-0-1      Bound    csivol-1d968c6a0a   10Gi       RWO            powerstore-xfs   28m
+logs-gateway-0     Bound    csivol-a0ec32f783   10Gi       RWO            powerstore-xfs   28m
+logs-logsdb-0      Bound    csivol-82108f0d02   10Gi       RWO            powerstore-xfs   31m
+logs-master-0      Bound    csivol-be215c358e   10Gi       RWO            powerstore-xfs   28m
+logs-metricsdb-0   Bound    csivol-f45dca73af   10Gi       RWO            powerstore-xfs   31m
+logs-nmnode-0-0    Bound    csivol-d4907c2a5f   10Gi       RWO            powerstore-xfs   28m
+logs-sparkhead-0   Bound    csivol-a547d0eafe   10Gi       RWO            powerstore-xfs   28m
+logs-storage-0-0   Bound    csivol-be1c00c43b   10Gi       RWO            powerstore-xfs   28m
+logs-storage-0-1   Bound    csivol-6db78042b3   10Gi       RWO            powerstore-xfs   28m
+[root@master tmp]# kubectl get pv
+NAME                CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                            STORAGECLASS     REASON   AGE
+csivol-0a44263783   15Gi       RWO            Delete           Bound    mssql-cluster/data-master-0      powerstore-xfs            28m
+csivol-0f758e4ef2   15Gi       RWO            Delete           Bound    mssql-cluster/data-sparkhead-0   powerstore-xfs            28m
+csivol-11c4d435da   15Gi       RWO            Delete           Bound    mssql-cluster/data-controldb     powerstore-xfs            34m
+csivol-120472a175   15Gi       RWO            Delete           Bound    mssql-cluster/data-data-0-0      powerstore-xfs            28m
+csivol-143675ca34   15Gi       RWO            Delete           Bound    mssql-cluster/data-storage-0-1   powerstore-xfs            28m
+csivol-1d968c6a0a   10Gi       RWO            Delete           Bound    mssql-cluster/logs-data-0-1      powerstore-xfs            28m
+csivol-25a1ad5afd   15Gi       RWO            Delete           Bound    mssql-cluster/data-metricsdb-0   powerstore-xfs            31m
+csivol-262f3f3d89   10Gi       RWO            Delete           Bound    mssql-cluster/logs-controldb     powerstore-xfs            34m
+csivol-38735eaca3   10Gi       RWO            Delete           Bound    mssql-cluster/logs-controller    powerstore-xfs            34m
+csivol-4249d1eeac   15Gi       RWO            Delete           Bound    mssql-cluster/data-logsdb-0      powerstore-xfs            31m
+csivol-6b488ba678   15Gi       RWO            Delete           Bound    mssql-cluster/data-gateway-0     powerstore-xfs            28m
+csivol-6c56fb8dcf   15Gi       RWO            Delete           Bound    mssql-cluster/data-nmnode-0-0    powerstore-xfs            28m
+csivol-6db78042b3   10Gi       RWO            Delete           Bound    mssql-cluster/logs-storage-0-1   powerstore-xfs            28m
+csivol-82108f0d02   10Gi       RWO            Delete           Bound    mssql-cluster/logs-logsdb-0      powerstore-xfs            31m
+csivol-9f7930430d   15Gi       RWO            Delete           Bound    mssql-cluster/data-data-0-1      powerstore-xfs            28m
+csivol-a0ec32f783   10Gi       RWO            Delete           Bound    mssql-cluster/logs-gateway-0     powerstore-xfs            28m
+csivol-a547d0eafe   10Gi       RWO            Delete           Bound    mssql-cluster/logs-sparkhead-0   powerstore-xfs            28m
+csivol-b549834bbc   15Gi       RWO            Delete           Bound    mssql-cluster/data-storage-0-0   powerstore-xfs            28m
+csivol-be1c00c43b   10Gi       RWO            Delete           Bound    mssql-cluster/logs-storage-0-0   powerstore-xfs            28m
+csivol-be215c358e   10Gi       RWO            Delete           Bound    mssql-cluster/logs-master-0      powerstore-xfs            28m
+csivol-be231d8552   15Gi       RWO            Delete           Bound    mssql-cluster/data-controller    powerstore-xfs            34m
+csivol-c75c006aaf   15Gi       RWO            Delete           Bound    mssql-cluster/data-compute-0-0   powerstore-xfs            28m
+csivol-d4907c2a5f   10Gi       RWO            Delete           Bound    mssql-cluster/logs-nmnode-0-0    powerstore-xfs            28m
+csivol-deb9cdf0c0   10Gi       RWO            Delete           Bound    mssql-cluster/logs-data-0-0      powerstore-xfs            28m
+csivol-f45dca73af   10Gi       RWO            Delete           Bound    mssql-cluster/logs-metricsdb-0   powerstore-xfs            31m
+csivol-f822089d6d   10Gi       RWO            Delete           Bound    mssql-cluster/logs-compute-0-0   powerstore-xfs            28m
+[root@master tmp]# kubectl get pv|wc
+     27     219    3645
+[root@master tmp]# kubectl get services
+NAME                      TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)                                                                                                                                                                                                                               AGE
+appproxy-svc              ClusterIP   10.110.8.143     <none>        8080/TCP                                                                                                                                                                                                                              28m
+appproxy-svc-external     NodePort    10.111.99.76     <none>        8080:30778/TCP                                                                                                                                                                                                                        28m
+compute-0-svc             ClusterIP   10.102.250.195   <none>        1433/TCP,8300/TCP,8310/TCP,8311/TCP,8400/TCP,8410/TCP,8411/TCP,5502/TCP                                                                                                                                                               28m
+controldb-svc             ClusterIP   10.101.61.66     <none>        1433/TCP,8311/TCP,8411/TCP                                                                                                                                                                                                            35m
+controller-svc            ClusterIP   10.101.209.98    <none>        443/TCP,8311/TCP,8301/TCP,8411/TCP,8401/TCP                                                                                                                                                                                           35m
+controller-svc-external   NodePort    10.104.84.54     <none>        8443:30080/TCP                                                                                                                                                                                                                        35m
+data-0-svc                ClusterIP   10.104.34.175    <none>        1433/TCP,8300/TCP,8310/TCP,8311/TCP,8312/TCP,8313/TCP,8400/TCP,8410/TCP,8411/TCP,8412/TCP,8413/TCP                                                                                                                                    28m
+gateway-svc               ClusterIP   10.105.75.136    <none>        8443/TCP,8300/TCP,8311/TCP,8400/TCP,8411/TCP                                                                                                                                                                                          28m
+gateway-svc-external      NodePort    10.101.80.182    <none>        8443:30443/TCP                                                                                                                                                                                                                        28m
+hdfsvault-svc             ClusterIP   10.96.179.19     <none>        443/TCP                                                                                                                                                                                                                               28m
+logsdb-svc                ClusterIP   10.97.108.197    <none>        9200/TCP,8300/TCP,8400/TCP                                                                                                                                                                                                            31m
+logsui-svc                ClusterIP   10.104.122.35    <none>        5601/TCP,8300/TCP,8400/TCP                                                                                                                                                                                                            31m
+master-p-svc              ClusterIP   10.103.149.50    <none>        1433/TCP                                                                                                                                                                                                                              28m
+master-svc                ClusterIP   10.107.196.189   <none>        8088/TCP,50075/TCP,50020/TCP,50010/TCP,8031/TCP,8032/TCP,8033/TCP,8040/TCP,8042/TCP,8080/TCP,1433/TCP,1533/TCP,9995/TCP,8998/TCP,8300/TCP,8301/TCP,8302/TCP,8310/TCP,8311/TCP,8400/TCP,8401/TCP,8402/TCP,8410/TCP,8411/TCP,8312/TCP   28m
+master-svc-external       NodePort    10.107.231.229   <none>        1433:31433/TCP                                                                                                                                                                                                                        28m
+metricsdb-svc             ClusterIP   10.107.171.88    <none>        8086/TCP,8300/TCP,8400/TCP                                                                                                                                                                                                            31m
+metricsdc-svc             ClusterIP   10.107.240.63    <none>        8300/TCP,8400/TCP                                                                                                                                                                                                                     31m
+metricsui-svc             ClusterIP   10.100.141.8     <none>        3000/TCP,8300/TCP,8400/TCP                                                                                                                                                                                                            31m
+mgmtproxy-svc             ClusterIP   10.97.76.11      <none>        443/TCP,8300/TCP,8311/TCP,8400/TCP,8411/TCP                                                                                                                                                                                           31m
+mgmtproxy-svc-external    NodePort    10.102.66.79     <none>        8443:30777/TCP                                                                                                                                                                                                                        31m
+mssqlvault-svc            ClusterIP   10.102.214.210   <none>        443/TCP                                                                                                                                                                                                                               28m
+nmnode-0-svc              ClusterIP   10.111.160.188   <none>        9000/TCP,50470/TCP,14000/TCP,8300/TCP,8311/TCP,8400/TCP,8411/TCP,2020/TCP,50200/TCP                                                                                                                                                   28m
+sparkhead-svc             ClusterIP   10.99.245.95     <none>        8090/TCP,8031/TCP,8032/TCP,8033/TCP,8080/TCP,1433/TCP,9995/TCP,8998/TCP,8999/TCP,9084/TCP,18480/TCP,19888/TCP                                                                                                                         28m
+storage-0-svc             ClusterIP   10.103.239.134   <none>        50470/TCP,50075/TCP,50200/TCP,50020/TCP,9000/TCP,50010/TCP,8040/TCP,8042/TCP,1433/TCP,8443/TCP,8300/TCP,8301/TCP,8310/TCP,8311/TCP,8400/TCP,8401/TCP,8410/TCP,8411/TCP                                                                28m
+[root@master tmp]#
 
 #check BDC status
 azdata login -n mssql-cluster
@@ -1358,9 +1478,224 @@ azdata bdc status show
 azdata bdc control status show
 azdata bdc sql status show
 
+[root@master tmp]# azdata login -n mssql-cluster
+Option '-n' has been deprecated and will be removed in a future release. Use '--namespace' instead.
+Username: admin
+Password:
+Logged in successfully to `https://192.168.1.21:30080` in namespace `mssql-cluster`. Setting active context to `mssql-cluster`.
+[root@master tmp]# azdata bdc endpoint list -o table
+Description                                             Endpoint                                                 Name               Protocol
+------------------------------------------------------  -------------------------------------------------------  -----------------  ----------
+Gateway to access HDFS files, Spark                     https://192.168.1.21:30443                               gateway            https
+Spark Jobs Management and Monitoring Dashboard          https://192.168.1.21:30443/gateway/default/sparkhistory  spark-history      https
+Spark Diagnostics and Monitoring Dashboard              https://192.168.1.21:30443/gateway/default/yarn          yarn-ui            https
+Application Proxy                                       https://192.168.1.21:30778                               app-proxy          https
+Management Proxy                                        https://192.168.1.22:30777                               mgmtproxy          https
+Log Search Dashboard                                    https://192.168.1.22:30777/kibana                        logsui             https
+Metrics Dashboard                                       https://192.168.1.22:30777/grafana                       metricsui          https
+Cluster Management Service                              https://192.168.1.21:30080                               controller         https
+SQL Server Master Instance Front-End                    192.168.1.22,31433                                       sql-server-master  tds
+HDFS File System Proxy                                  https://192.168.1.21:30443/gateway/default/webhdfs/v1    webhdfs            https
+Proxy for running Spark statements, jobs, applications  https://192.168.1.21:30443/gateway/default/livy/v1       livy               https
+Hadoop KMS proxy for managing Hadoop Encryption keys    https://192.168.1.21:30443/gateway/default/hadoopkms/v1  hadoopkms          https
+[root@master tmp]# azdata bdc status show
+
+
+ Mssql-cluster: ready                                                                                                                Health Status:  healthy
+ ===========================================================================================================================================================
+ Services: READY                                                                                                                     Health Status:  healthy
+ -----------------------------------------------------------------------------------------------------------------------------------------------------------
+ Servicename    State    Healthstatus    Details
+
+ sql            READY    healthy         -
+ hdfs           READY    healthy         -
+ spark          READY    healthy         -
+ control        READY    healthy         -
+ gateway        READY    healthy         -
+ app            READY    healthy         -
+
+
+ Sql Services: ready                                                                                                                 Health Status:  healthy
+ -----------------------------------------------------------------------------------------------------------------------------------------------------------
+ Resourcename    State    Healthstatus    Details
+
+ master          ready    healthy         StatefulSet master is healthy
+ compute-0       ready    healthy         StatefulSet compute-0 is healthy
+ data-0          ready    healthy         StatefulSet data-0 is healthy
+ storage-0       ready    healthy         StatefulSet storage-0 is healthy
+
+
+ Hdfs Services: ready                                                                                                                Health Status:  healthy
+ -----------------------------------------------------------------------------------------------------------------------------------------------------------
+ Resourcename    State    Healthstatus    Details
+
+ nmnode-0        ready    healthy         StatefulSet nmnode-0 is healthy
+ storage-0       ready    healthy         StatefulSet storage-0 is healthy
+ sparkhead       ready    healthy         StatefulSet sparkhead is healthy
+
+
+ Spark Services: ready                                                                                                               Health Status:  healthy
+ -----------------------------------------------------------------------------------------------------------------------------------------------------------
+ Resourcename    State    Healthstatus    Details
+
+ sparkhead       ready    healthy         StatefulSet sparkhead is healthy
+ storage-0       ready    healthy         StatefulSet storage-0 is healthy
+
+
+ Control Services: ready                                                                                                             Health Status:  healthy
+ -----------------------------------------------------------------------------------------------------------------------------------------------------------
+ Resourcename    State    Healthstatus    Details
+
+ controldb       ready    healthy         StatefulSet controldb is healthy
+ control         ready    healthy         ReplicaSet control is healthy
+ metricsdc       ready    healthy         DaemonSet metricsdc is healthy
+ metricsui       ready    healthy         ReplicaSet metricsui is healthy
+ metricsdb       ready    healthy         StatefulSet metricsdb is healthy
+ logsui          ready    healthy         ReplicaSet logsui is healthy
+ logsdb          ready    healthy         StatefulSet logsdb is healthy
+ mgmtproxy       ready    healthy         ReplicaSet mgmtproxy is healthy
+ controlwd       ready    healthy         ReplicaSet controlwd is healthy
+
+
+ Gateway Services: ready                                                                                                             Health Status:  healthy
+ -----------------------------------------------------------------------------------------------------------------------------------------------------------
+ Resourcename    State    Healthstatus    Details
+
+ gateway         ready    healthy         StatefulSet gateway is healthy
+
+
+ App Services: ready                                                                                                                 Health Status:  healthy
+ -----------------------------------------------------------------------------------------------------------------------------------------------------------
+ Resourcename    State    Healthstatus    Details
+
+ appproxy        ready    healthy         ReplicaSet appproxy is healthy
+
+
+[root@master tmp]# azdata bdc control status show
+
+
+ Control: READY                                                                                                                      Health Status:  healthy
+ ===========================================================================================================================================================
+ Resources: ready                                                                                                                    Health Status:  healthy
+ -----------------------------------------------------------------------------------------------------------------------------------------------------------
+ Resourcename    State    Healthstatus    Details
+
+ controldb       ready    healthy         StatefulSet controldb is healthy
+ control         ready    healthy         ReplicaSet control is healthy
+ metricsdc       ready    healthy         DaemonSet metricsdc is healthy
+ metricsui       ready    healthy         ReplicaSet metricsui is healthy
+ metricsdb       ready    healthy         StatefulSet metricsdb is healthy
+ logsui          ready    healthy         ReplicaSet logsui is healthy
+ logsdb          ready    healthy         StatefulSet logsdb is healthy
+ mgmtproxy       ready    healthy         ReplicaSet mgmtproxy is healthy
+ controlwd       ready    healthy         ReplicaSet controlwd is healthy
+
+
+[root@master tmp]# azdata bdc sql status show
+
+
+ Sql: READY                                                                                                                          Health Status:  healthy
+ ===========================================================================================================================================================
+ Resources: ready                                                                                                                    Health Status:  healthy
+ -----------------------------------------------------------------------------------------------------------------------------------------------------------
+ Resourcename    State    Healthstatus    Details
+
+ master          ready    healthy         StatefulSet master is healthy
+ compute-0       ready    healthy         StatefulSet compute-0 is healthy
+ data-0          ready    healthy         StatefulSet data-0 is healthy
+ storage-0       ready    healthy         StatefulSet storage-0 is healthy
+
+
+[root@master tmp]#
+
+[root@master tmp]# ssh node1
+Last login: Wed Oct  6 04:21:30 2021 from 192.168.1.20
+[root@node1 ~]# docker images|grep mssql
+mcr.microsoft.com/mssql/bdc/mssql-server-data             2019-CU13-ubuntu-20.04   93382876afa7   4 days ago     10.9GB
+mcr.microsoft.com/mssql/bdc/mssql-hadoop                  2019-CU13-ubuntu-20.04   27539432ba45   4 days ago     14.7GB
+mcr.microsoft.com/mssql/bdc/mssql-security-support        2019-CU13-ubuntu-20.04   500f7c24c0b8   4 days ago     866MB
+mcr.microsoft.com/mssql/bdc/mssql-security-knox           2019-CU13-ubuntu-20.04   6844521990a3   4 days ago     1GB
+mcr.microsoft.com/mssql/bdc/mssql-controller              2019-CU13-ubuntu-20.04   0dfdcbbe2ba4   4 days ago     1.11GB
+mcr.microsoft.com/mssql/bdc/mssql-app-service-proxy       2019-CU13-ubuntu-20.04   686f5ca460df   4 days ago     929MB
+mcr.microsoft.com/mssql/bdc/mssql-monitor-fluentbit       2019-CU13-ubuntu-20.04   dbbed1633c4d   4 days ago     1.09GB
+mcr.microsoft.com/mssql/bdc/mssql-monitor-telegraf        2019-CU13-ubuntu-20.04   348da2408550   4 days ago     1.09GB
+mcr.microsoft.com/mssql/bdc/mssql-monitor-collectd        2019-CU13-ubuntu-20.04   cce544f21310   4 days ago     1.17GB
+mcr.microsoft.com/mssql/rhel/server                       2019-latest              b572b24fd03c   2 months ago   1.66GB
+[root@node1 ~]# docker ps
+CONTAINER ID   IMAGE                                                 COMMAND                  CREATED             STATUS             PORTS     NAMES
+3928185de95e   dbbed1633c4d                                          "/opt/agent/bin/agent"   33 minutes ago      Up 33 minutes                k8s_fluentbit_storage-0-1_mssql-cluster_f307388e-3883-43dc-9e58-1d581a07c330_0
+b7e53f9cb9d0   dbbed1633c4d                                          "/opt/agent/bin/agent"   33 minutes ago      Up 33 minutes                k8s_fluentbit_data-0-0_mssql-cluster_040b8958-6ca7-4868-9a5a-a8dd0e1feb10_0
+008f50f9bb16   mcr.microsoft.com/mssql/bdc/mssql-monitor-collectd    "/opt/agent/bin/agent"   33 minutes ago      Up 33 minutes                k8s_collectd_storage-0-1_mssql-cluster_f307388e-3883-43dc-9e58-1d581a07c330_0
+c4903334a9af   mcr.microsoft.com/mssql/bdc/mssql-monitor-collectd    "/opt/agent/bin/agent"   33 minutes ago      Up 33 minutes                k8s_collectd_data-0-0_mssql-cluster_040b8958-6ca7-4868-9a5a-a8dd0e1feb10_0
+5414202f22cb   dbbed1633c4d                                          "/opt/agent/bin/agent"   33 minutes ago      Up 33 minutes                k8s_fluentbit_sparkhead-0_mssql-cluster_59923293-bdba-4350-b151-6c1a3dfad116_0
+9ee0b3366f7e   27539432ba45                                          "/opt/agent/bin/agent"   33 minutes ago      Up 33 minutes                k8s_hadoop-hivemetastore_sparkhead-0_mssql-cluster_59923293-bdba-4350-b151-6c1a3dfad116_0
+e8df1314bef3   27539432ba45                                          "/opt/agent/bin/agent"   33 minutes ago      Up 33 minutes                k8s_hadoop-livy-sparkhistory_sparkhead-0_mssql-cluster_59923293-bdba-4350-b151-6c1a3dfad116_0
+23c271af8666   dbbed1633c4d                                          "/opt/agent/bin/agent"   33 minutes ago      Up 33 minutes                k8s_fluentbit_nmnode-0-0_mssql-cluster_d00f1d67-3c75-431c-8104-bd364300f47f_0
+9ab6d7e685b8   93382876afa7                                          "/opt/agent/bin/agent"   33 minutes ago      Up 33 minutes                k8s_mssql-server_storage-0-1_mssql-cluster_f307388e-3883-43dc-9e58-1d581a07c330_0
+80cbc4fd4925   mcr.microsoft.com/mssql/bdc/mssql-hadoop              "/opt/agent/bin/agent"   33 minutes ago      Up 33 minutes                k8s_hadoop_storage-0-1_mssql-cluster_f307388e-3883-43dc-9e58-1d581a07c330_0
+2a16a2d4d425   mcr.microsoft.com/mssql/bdc/mssql-hadoop              "/opt/agent/bin/agent"   34 minutes ago      Up 33 minutes                k8s_hadoop_nmnode-0-0_mssql-cluster_d00f1d67-3c75-431c-8104-bd364300f47f_0
+7a6c51ced0e8   mcr.microsoft.com/mssql/bdc/mssql-hadoop              "/opt/agent/bin/agent"   34 minutes ago      Up 33 minutes                k8s_hadoop-yarn-jobhistory_sparkhead-0_mssql-cluster_59923293-bdba-4350-b151-6c1a3dfad116_0
+e738fcdcfa49   mcr.microsoft.com/mssql/bdc/mssql-server-data         "/opt/agent/bin/agent"   49 minutes ago      Up 48 minutes                k8s_mssql-server_data-0-0_mssql-cluster_040b8958-6ca7-4868-9a5a-a8dd0e1feb10_0
+5c66c718d8e0   k8s.gcr.io/pause:3.5                                  "/pause"                 53 minutes ago      Up 53 minutes                k8s_POD_storage-0-1_mssql-cluster_f307388e-3883-43dc-9e58-1d581a07c330_0
+9600fd1b098d   dbbed1633c4d                                          "/opt/agent/bin/agent"   54 minutes ago      Up 54 minutes                k8s_fluentbit_gateway-0_mssql-cluster_6f8afe92-6b96-40ca-a733-91a7c49dce2b_0
+5b71ecedf0e2   mcr.microsoft.com/mssql/bdc/mssql-security-knox       "/opt/agent/bin/agent"   54 minutes ago      Up 54 minutes                k8s_knox_gateway-0_mssql-cluster_6f8afe92-6b96-40ca-a733-91a7c49dce2b_0
+9cb06cd2ba4a   k8s.gcr.io/pause:3.5                                  "/pause"                 54 minutes ago      Up 54 minutes                k8s_POD_nmnode-0-0_mssql-cluster_d00f1d67-3c75-431c-8104-bd364300f47f_0
+4f2caaf54fd3   k8s.gcr.io/pause:3.5                                  "/pause"                 54 minutes ago      Up 54 minutes                k8s_POD_sparkhead-0_mssql-cluster_59923293-bdba-4350-b151-6c1a3dfad116_0
+de0b1a36b2e9   k8s.gcr.io/pause:3.5                                  "/pause"                 54 minutes ago      Up 54 minutes                k8s_POD_data-0-0_mssql-cluster_040b8958-6ca7-4868-9a5a-a8dd0e1feb10_0
+04ffc4cf0648   dbbed1633c4d                                          "/opt/agent/bin/agent"   54 minutes ago      Up 54 minutes                k8s_fluentbit_appproxy-hcmw6_mssql-cluster_f46fa03b-b890-4bd5-af50-441514b3dcc7_0
+f8a082bdb8da   mcr.microsoft.com/mssql/bdc/mssql-app-service-proxy   "/opt/agent/bin/agent"   54 minutes ago      Up 54 minutes                k8s_app-service-proxy_appproxy-hcmw6_mssql-cluster_f46fa03b-b890-4bd5-af50-441514b3dcc7_0
+9cfe5d70ebe5   k8s.gcr.io/pause:3.5                                  "/pause"                 54 minutes ago      Up 54 minutes                k8s_POD_gateway-0_mssql-cluster_6f8afe92-6b96-40ca-a733-91a7c49dce2b_0
+ea95093f1bcb   k8s.gcr.io/pause:3.5                                  "/pause"                 54 minutes ago      Up 54 minutes                k8s_POD_appproxy-hcmw6_mssql-cluster_f46fa03b-b890-4bd5-af50-441514b3dcc7_0
+3c70fd721bcc   mcr.microsoft.com/mssql/bdc/mssql-monitor-telegraf    "/opt/agent/bin/agent"   57 minutes ago      Up 57 minutes                k8s_telegraf_metricsdc-txdtg_mssql-cluster_e858378b-3d7d-4cfa-abc5-0251e993ad04_0
+995b28f61bde   k8s.gcr.io/pause:3.5                                  "/pause"                 57 minutes ago      Up 57 minutes                k8s_POD_metricsdc-txdtg_mssql-cluster_e858378b-3d7d-4cfa-abc5-0251e993ad04_0
+7a850ef5bd7a   mcr.microsoft.com/mssql/bdc/mssql-monitor-fluentbit   "/opt/agent/bin/agent"   58 minutes ago      Up 58 minutes                k8s_fluentbit_control-cr5qx_mssql-cluster_d8b3e919-d10b-46b0-b3a8-776e5e0c7d94_0
+21435287bc33   mcr.microsoft.com/mssql/bdc/mssql-security-support    "/opt/agent/bin/agent"   59 minutes ago      Up 59 minutes                k8s_security-support_control-cr5qx_mssql-cluster_d8b3e919-d10b-46b0-b3a8-776e5e0c7d94_0
+365da16206c0   mcr.microsoft.com/mssql/bdc/mssql-controller          "/opt/bin/start-cont…"   59 minutes ago      Up 59 minutes                k8s_controller_control-cr5qx_mssql-cluster_d8b3e919-d10b-46b0-b3a8-776e5e0c7d94_0
+f25516a1855a   k8s.gcr.io/pause:3.5                                  "/pause"                 About an hour ago   Up About an hour             k8s_POD_control-cr5qx_mssql-cluster_d8b3e919-d10b-46b0-b3a8-776e5e0c7d94_0
+8e5f21b50034   448b83161ea3                                          "/csi-powerstore"        20 hours ago        Up 20 hours                  k8s_driver_powerstore-controller-8ffbb88c7-6b7k4_csi-powerstore_18f87a7d-86d2-46b6-8dc5-becb75718f4d_0
+f6386e4ac423   k8s.gcr.io/sig-storage/csi-snapshotter                "/csi-snapshotter --…"   20 hours ago        Up 20 hours                  k8s_snapshotter_powerstore-controller-8ffbb88c7-6b7k4_csi-powerstore_18f87a7d-86d2-46b6-8dc5-becb75718f4d_0
+9ff034ad2011   k8s.gcr.io/sig-storage/csi-provisioner                "/csi-provisioner --…"   20 hours ago        Up 20 hours                  k8s_provisioner_powerstore-controller-8ffbb88c7-6b7k4_csi-powerstore_18f87a7d-86d2-46b6-8dc5-becb75718f4d_0
+f66d4322b301   k8s.gcr.io/sig-storage/csi-resizer                    "/csi-resizer --csi-…"   20 hours ago        Up 20 hours                  k8s_resizer_powerstore-controller-8ffbb88c7-6b7k4_csi-powerstore_18f87a7d-86d2-46b6-8dc5-becb75718f4d_0
+cc9b36dc2b9f   k8s.gcr.io/sig-storage/csi-attacher                   "/csi-attacher --csi…"   20 hours ago        Up 20 hours                  k8s_attacher_powerstore-controller-8ffbb88c7-6b7k4_csi-powerstore_18f87a7d-86d2-46b6-8dc5-becb75718f4d_0
+c2ef980e068d   k8s.gcr.io/sig-storage/csi-node-driver-registrar      "/csi-node-driver-re…"   20 hours ago        Up 20 hours                  k8s_registrar_powerstore-node-8cmkd_csi-powerstore_768a6532-631f-445b-9d8f-78ad9d1babfe_0
+d2bb18278c46   448b83161ea3                                          "/csi-powerstore"        20 hours ago        Up 20 hours                  k8s_driver_powerstore-node-8cmkd_csi-powerstore_768a6532-631f-445b-9d8f-78ad9d1babfe_0
+346ca8953a50   k8s.gcr.io/pause:3.5                                  "/pause"                 20 hours ago        Up 20 hours                  k8s_POD_powerstore-controller-8ffbb88c7-6b7k4_csi-powerstore_18f87a7d-86d2-46b6-8dc5-becb75718f4d_0
+afc465a9020f   k8s.gcr.io/pause:3.5                                  "/pause"                 20 hours ago        Up 20 hours                  k8s_POD_powerstore-node-8cmkd_csi-powerstore_768a6532-631f-445b-9d8f-78ad9d1babfe_0
+35af4799d04a   8d147537fb7d                                          "/coredns -conf /etc…"   23 hours ago        Up 23 hours                  k8s_coredns_coredns-78fcd69978-k5f9p_kube-system_7e5b6d42-d67e-4b26-ae25-2a07bd966e00_2
+bb0ce34bedc2   8d147537fb7d                                          "/coredns -conf /etc…"   23 hours ago        Up 23 hours                  k8s_coredns_coredns-78fcd69978-7ghd2_kube-system_db8dda2b-374b-4d98-81e6-549f4a5d9174_2
+1425d4803ada   k8s.gcr.io/pause:3.5                                  "/pause"                 23 hours ago        Up 23 hours                  k8s_POD_coredns-78fcd69978-k5f9p_kube-system_7e5b6d42-d67e-4b26-ae25-2a07bd966e00_11
+2d0649f446a4   k8s.gcr.io/pause:3.5                                  "/pause"                 23 hours ago        Up 23 hours                  k8s_POD_coredns-78fcd69978-7ghd2_kube-system_db8dda2b-374b-4d98-81e6-549f4a5d9174_12
+e2c399894108   8522d622299c                                          "/opt/bin/flanneld -…"   23 hours ago        Up 23 hours                  k8s_kube-flannel_kube-flannel-ds-mrrcn_kube-system_34388ed4-d646-4d5f-87da-b982774bfbfe_2
+98c1e3cf6439   873127efbc8a                                          "/usr/local/bin/kube…"   23 hours ago        Up 23 hours                  k8s_kube-proxy_kube-proxy-zjsfs_kube-system_fa6a444f-23e2-4951-bcdd-71eedbac6f4e_2
+36f155c54b77   k8s.gcr.io/pause:3.5                                  "/pause"                 23 hours ago        Up 23 hours                  k8s_POD_kube-proxy-zjsfs_kube-system_fa6a444f-23e2-4951-bcdd-71eedbac6f4e_2
+5882d505a007   k8s.gcr.io/pause:3.5                                  "/pause"                 23 hours ago        Up 23 hours                  k8s_POD_kube-flannel-ds-mrrcn_kube-system_34388ed4-d646-4d5f-87da-b982774bfbfe_2
+[root@node1 ~]# free -m
+              total        used        free      shared  buff/cache   available
+Mem:          64150       12564       16794          88       34791       50877
+Swap:             0           0           0
+[root@node1 ~]#
+[root@node1 ~]# netstat -ntpl
+Active Internet connections (only servers)
+Proto Recv-Q Send-Q Local Address           Foreign Address         State       PID/Program name
+tcp        0      0 0.0.0.0:30080           0.0.0.0:*               LISTEN      2597/kube-proxy
+tcp        0      0 127.0.0.1:10248         0.0.0.0:*               LISTEN      1185/kubelet
+tcp        0      0 0.0.0.0:31433           0.0.0.0:*               LISTEN      2597/kube-proxy
+tcp        0      0 127.0.0.1:10249         0.0.0.0:*               LISTEN      2597/kube-proxy
+tcp        0      0 0.0.0.0:30443           0.0.0.0:*               LISTEN      2597/kube-proxy
+tcp        0      0 127.0.0.1:46805         0.0.0.0:*               LISTEN      1185/kubelet
+tcp        0      0 0.0.0.0:22              0.0.0.0:*               LISTEN      1115/sshd
+tcp        0      0 0.0.0.0:30777           0.0.0.0:*               LISTEN      2597/kube-proxy
+tcp        0      0 0.0.0.0:30778           0.0.0.0:*               LISTEN      2597/kube-proxy
+tcp6       0      0 :::10250                :::*                    LISTEN      1185/kubelet
+tcp6       0      0 :::10256                :::*                    LISTEN      2597/kube-proxy
+tcp6       0      0 :::22                   :::*                    LISTEN      1115/sshd
+[root@node1 ~]#
+
 azdata bdc endpoint list -e sql-server-master
-Azure Data Studio (launch GUI console, connect to bdc "xxxip,31433)
+Azure Data Studio (launch GUI console, SERVERS: connect to bdc "xxxip,31433  SQL SERVER BIG DATA CLUSTERS: https://192.168.1.21:30080)
 https://docs.microsoft.com/en-us/sql/big-data-cluster/connect-to-big-data-cluster?view=sql-server-ver15
+in GUI NOTEBOOKS: open .ipynb to test scripts... (Note: github .ipynb need use raw format to download!)
+(wget https://github.com/microsoft/sqlworkshops-bdc/raw/de44633dfc01db08cef36084a8a2975b6fa5befa/SQL2019BDC/notebooks/bdc_tutorial_01.ipynb -O bdc_tutorial_01.ipynb)
 
 #delete BDC
 [root@master ~]# azdata bdc delete --name mssql-cluster --force
@@ -1395,10 +1730,298 @@ chmod +x bootstrap-sample-db.sh
 curl -o bootstrap-sample-db.sql "https://raw.githubusercontent.com/Microsoft/sql-server-samples/master/samples/features/sql-big-data-cluster/bootstrap-sample-db.sql"
 ./bootstrap-sample-db.sh <CLUSTER_NAMESPACE> <SQL_MASTER_ENDPOINT> <KNOX_ENDPOINT>
 
+
 #BDC workshop lab
+https://github.com/microsoft/sqlworkshops-bdc/tree/master/SQL2019BDC/notebooks
 https://microsoft.github.io/sqlworkshops/
 https://github.com/microsoft/sqlworkshops-bdc
 https://aka.ms/bdc-samples
+
+[root@master tmp]# curl "https://sabwoody.blob.core.windows.net/backups/WideWorldImporters.bak" -o WWI.bak
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100  568M  100  568M    0     0  11.2M      0  0:00:50  0:00:50 --:--:-- 12.8M
+[root@master tmp]# curl "https://sabwoody.blob.core.windows.net/backups/WideWorldImporters.bak" -o c:\temp\WWI.bak^C
+[root@master tmp]# curl "https://sabwoody.blob.core.windows.net/backups/AdventureWorks.bak" -o AdventureWorks.bak
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100  207M  100  207M    0     0  10.7M      0  0:00:19  0:00:19 --:--:-- 11.1M
+[root@master tmp]# curl "https://sabwoody.blob.core.windows.net/backups/AdventureWorksDW.bak" -o AdventureWorksDW.bak
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100 97.1M  100 97.1M    0     0  10.4M      0  0:00:09  0:00:09 --:--:-- 10.7M
+[root@master tmp]# curl "https://sabwoody.blob.core.windows.net/backups/WideWorldImportersDW.bak" -o WWIDW.bak
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100  268M  100  268M    0     0  10.6M      0  0:00:25  0:00:25 --:--:-- 11.1M
+[root@master tmp]# ls -hl *.bak
+-rw-r--r--. 1 root root 208M Oct  7 10:45 AdventureWorks.bak
+-rw-r--r--. 1 root root  98M Oct  7 10:45 AdventureWorksDW.bak
+-rw-r--r--. 1 root root  48M May 22  2017 WideWorldImportersDW-Full.bak
+-rw-r--r--. 1 root root 569M Oct  7 10:43 WWI.bak
+-rw-r--r--. 1 root root 269M Oct  7 10:46 WWIDW.bak
+[root@master tmp]# kubectl cp WWI.bak master-0:/var/opt/mssql/data -c mssql-server -n mssql-cluster
+[root@master tmp]# kubectl cp WWIDW.bak master-0:/var/opt/mssql/data -c mssql-server -n mssql-cluster
+[root@master tmp]# kubectl cp AdventureWorks.bak master-0:/var/opt/mssql/data -c mssql-server -n mssql-cluster
+[root@master tmp]# kubectl cp AdventureWorksDW.bak master-0:/var/opt/mssql/data -c mssql-server -n mssql-cluster
+[root@master tmp]#
+
+[root@master tmp]# kubectl exec -it master-0 bash
+kubectl exec [POD] [COMMAND] is DEPRECATED and will be removed in a future version. Use kubectl exec [POD] -- [COMMAND] instead.
+Defaulted container "mssql-server" out of: mssql-server, collectd, fluentbit
+To run a command as administrator (user "root"), use "sudo <command>".
+See "man sudo_root" for details.
+
+agent@master-0:/$ ls -hl /var/opt/mssql/data/
+total 1.9G
+-rw-r--r--. 1 agent agent 208M Oct  7 14:54 AdventureWorks.bak
+-rw-r--r--. 1 agent agent  98M Oct  7 14:55 AdventureWorksDW.bak
+-rw-rw----. 1 mssql mssql 8.0M Oct  6 08:12 DWConfiguration.mdf
+-rw-rw----. 1 mssql mssql 8.0M Oct  6 08:12 DWConfiguration_log.ldf
+-rw-rw----. 1 mssql mssql 500M Oct  6 08:12 DWDiagnostics.mdf
+-rw-rw----. 1 mssql mssql  72M Oct  6 08:12 DWDiagnostics_log.ldf
+-rw-rw----. 1 mssql mssql 8.0M Oct  6 08:05 DWQueue.mdf
+-rw-rw----. 1 mssql mssql 8.0M Oct  6 08:12 DWQueue_log.ldf
+-rw-rw----. 1 mssql mssql  256 Oct  6 08:04 Entropy.bin
+-rw-r--r--. 1 agent agent 569M Oct  7 14:50 WWI.bak
+-rw-r--r--. 1 agent agent 269M Oct  7 14:54 WWIDW.bak
+-rw-rw----. 1 mssql mssql 4.5M Oct  7 05:18 master.mdf
+-rw-rw----. 1 mssql mssql 2.0M Oct  7 14:21 mastlog.ldf
+-rw-rw----. 1 mssql mssql 8.0M Oct  6 09:40 model.mdf
+-rw-rw----. 1 mssql mssql  14M Oct  6 08:05 model_msdbdata.mdf
+-rw-rw----. 1 mssql mssql 512K Oct  6 08:05 model_msdblog.ldf
+-rw-rw----. 1 mssql mssql 2.3M Oct  6 08:05 model_replicatedmaster.ldf
+-rw-rw----. 1 mssql mssql 4.5M Oct  6 08:05 model_replicatedmaster.mdf
+-rw-rw----. 1 mssql mssql 8.0M Oct  6 09:40 modellog.ldf
+-rw-rw----. 1 mssql mssql  14M Oct  6 08:05 msdbdata.mdf
+-rw-rw----. 1 mssql mssql 512K Oct  6 08:05 msdblog.ldf
+-rw-rw----. 1 mssql mssql 8.0M Oct  6 08:05 tempdb.mdf
+-rw-rw----. 1 mssql mssql 8.0M Oct  6 08:05 tempdb2.ndf
+-rw-rw----. 1 mssql mssql 8.0M Oct  6 08:05 tempdb3.ndf
+-rw-rw----. 1 mssql mssql 8.0M Oct  6 08:05 tempdb4.ndf
+-rw-rw----. 1 mssql mssql 8.0M Oct  6 08:05 tempdb5.ndf
+-rw-rw----. 1 mssql mssql 8.0M Oct  6 08:05 tempdb6.ndf
+-rw-rw----. 1 mssql mssql 8.0M Oct  6 08:05 tempdb7.ndf
+-rw-rw----. 1 mssql mssql 8.0M Oct  6 08:05 tempdb8.ndf
+-rw-rw----. 1 mssql mssql 8.0M Oct  7 14:09 templog.ldf
+agent@master-0:/$
+
+[root@master tmp]# curl -i -L -k -u root:P@ssw0rd -X PUT "https://192.168.1.21:30443/gateway/default/webhdfs/v1/product_review_data?op=MKDIRS"            HTTP/1.1 200 OK
+Date: Thu, 07 Oct 2021 15:04:09 GMT
+Set-Cookie: KNOXSESSIONID=node01o9fbsz1gsbwnx7qsotfo3aqh4.node0; Path=/gateway/default; Secure; HttpOnly
+Expires: Thu, 01 Jan 1970 00:00:00 GMT
+Set-Cookie: rememberMe=deleteMe; Path=/gateway/default; Max-Age=0; Expires=Wed, 06-Oct-2021 15:04:09 GMT
+Date: Thu, 07 Oct 2021 15:04:09 GMT
+Cache-Control: no-cache
+Expires: Thu, 07 Oct 2021 15:04:09 GMT
+Date: Thu, 07 Oct 2021 15:04:09 GMT
+Pragma: no-cache
+X-FRAME-OPTIONS: SAMEORIGIN
+Content-Type: application/json;charset=utf-8
+Transfer-Encoding: chunked
+
+{"boolean":true}
+
+[root@master tmp]# curl -i -L -k -u root:P@ssw0rd -X PUT "https://192.168.1.21:30443/gateway/default/webhdfs/v1/partner_customers?op=MKDIRS"
+HTTP/1.1 200 OK
+Date: Thu, 07 Oct 2021 15:08:16 GMT
+Set-Cookie: KNOXSESSIONID=node0sqjqndc25sep1utan49vpgcix5.node0; Path=/gateway/default; Secure; HttpOnly
+Expires: Thu, 01 Jan 1970 00:00:00 GMT
+Set-Cookie: rememberMe=deleteMe; Path=/gateway/default; Max-Age=0; Expires=Wed, 06-Oct-2021 15:08:17 GMT
+Date: Thu, 07 Oct 2021 15:08:17 GMT
+Cache-Control: no-cache
+Expires: Thu, 07 Oct 2021 15:08:17 GMT
+Date: Thu, 07 Oct 2021 15:08:17 GMT
+Pragma: no-cache
+X-FRAME-OPTIONS: SAMEORIGIN
+Content-Type: application/json;charset=utf-8
+Transfer-Encoding: chunked
+
+{"boolean":true}
+
+[root@master tmp]# curl -i -L -k -u root:P@ssw0rd -X PUT "https://192.168.1.21:30443/gateway/default/webhdfs/v1/partner_products?op=MKDIRS"
+HTTP/1.1 200 OK
+Date: Thu, 07 Oct 2021 15:09:10 GMT
+Set-Cookie: KNOXSESSIONID=node0l0ydqmt4savi1uq7empniovgc6.node0; Path=/gateway/default; Secure; HttpOnly
+Expires: Thu, 01 Jan 1970 00:00:00 GMT
+Set-Cookie: rememberMe=deleteMe; Path=/gateway/default; Max-Age=0; Expires=Wed, 06-Oct-2021 15:09:10 GMT
+Date: Thu, 07 Oct 2021 15:09:10 GMT
+Cache-Control: no-cache
+Expires: Thu, 07 Oct 2021 15:09:10 GMT
+Date: Thu, 07 Oct 2021 15:09:10 GMT
+Pragma: no-cache
+X-FRAME-OPTIONS: SAMEORIGIN
+Content-Type: application/json;charset=utf-8
+Transfer-Encoding: chunked
+
+{"boolean":true}[root@master tmp]#
+[root@master tmp]# curl -i -L -k -u root:P@ssw0rd -X PUT "https://192.168.1.21:30443/gateway/default/webhdfs/v1/web_logs?op=MKDIRS"
+HTTP/1.1 200 OK
+Date: Thu, 07 Oct 2021 15:09:52 GMT
+Set-Cookie: KNOXSESSIONID=node01orbtr68f6us51eidpm4bpx0uj7.node0; Path=/gateway/default; Secure; HttpOnly
+Expires: Thu, 01 Jan 1970 00:00:00 GMT
+Set-Cookie: rememberMe=deleteMe; Path=/gateway/default; Max-Age=0; Expires=Wed, 06-Oct-2021 15:09:52 GMT
+Date: Thu, 07 Oct 2021 15:09:52 GMT
+Cache-Control: no-cache
+Expires: Thu, 07 Oct 2021 15:09:52 GMT
+Date: Thu, 07 Oct 2021 15:09:52 GMT
+Pragma: no-cache
+X-FRAME-OPTIONS: SAMEORIGIN
+Content-Type: application/json;charset=utf-8
+Transfer-Encoding: chunked
+
+{"boolean":true}[root@master tmp]#
+[root@master tmp]# curl -G "https://sabwoody.blob.core.windows.net/backups/product_reviews.csv" -o product_reviews.csv
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100   215  100   215    0     0    271      0 --:--:-- --:--:-- --:--:--   271
+[root@master tmp]# curl -G "https://sabwoody.blob.core.windows.net/backups/products.csv" -o products.csv
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100   215  100   215    0     0   1053      0 --:--:-- --:--:-- --:--:--  1053rl -
+[root@master tmp]# curl -G "https://sabwoody.blob.core.windows.net/backups/customers.csv" -o customers.csv
+u  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100 43717  100 43717    0     0   234k      0 --:--:-- --:--:-- --:--:--  234krl -
+[root@master tmp]# curl -G "https://sabwoody.blob.core.windows.net/backups/stockitemholdings.csv" -o products.csv
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100   215  100   215    0     0   1335      0 --:--:-- --:--:-- --:--:--  1335
+[root@master tmp]# curl -G "https://sabwoody.blob.core.windows.net/backups/web_clickstreams.csv" -o web_clickstreams.csv
+c  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+ 35  170M   35 60.0M    0     0   9.8M      0  0:00:17  0:00:06  0:00:11 10.6Msvet-formatted.c
+100  170M  100  170M    0     0  10.0M      0  0:00:16  0:00:16 --:--:-- 10.3Mormatted.csvng-f
+[root@master tmp]# curl -G "https://sabwoody.blob.core.windows.net/backups/fleet-formatted.csv" -o fleet-formatted.csv
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100  8074  100  8074    0     0  17326      0 --:--:-- --:--:-- --:--:-- 17289
+[root@master tmp]# curl -G "https://sabwoody.blob.core.windows.net/backups/training-formatted.csv" -o training-formatted.csv
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100 6341k  100 6341k    0     0  7247k      0 --:--:-- --:--:-- --:--:-- 7247k
+[root@master tmp]# ls -halt *.csv
+-rw-r--r--. 1 root root 6.2M Oct  7 11:12 training-formatted.csv
+-rw-r--r--. 1 root root 7.9K Oct  7 11:11 fleet-formatted.csv
+-rw-r--r--. 1 root root 171M Oct  7 11:11 web_clickstreams.csv
+-rw-r--r--. 1 root root  215 Oct  7 11:11 products.csv
+-rw-r--r--. 1 root root  43K Oct  7 11:11 customers.csv
+-rw-r--r--. 1 root root  215 Oct  7 11:10 product_reviews.csv
+
+[root@master tmp]# curl -i -L -k -u root:P@ssw0rd -X PUT "https://192.168.1.21:30443/gateway/default/webhdfs/v1/product_review_data/product_reviews.csv?op=create&overwrite=true" -H "Content-Type: application/octet-stream" -T "product_reviews.csv"
+HTTP/1.1 307 Temporary Redirect
+Date: Thu, 07 Oct 2021 15:17:27 GMT
+Set-Cookie: KNOXSESSIONID=node012xa50nne37ekdgiwz00rbpxf8.node0; Path=/gateway/default; Secure; HttpOnly
+Expires: Thu, 01 Jan 1970 00:00:00 GMT
+Set-Cookie: rememberMe=deleteMe; Path=/gateway/default; Max-Age=0; Expires=Wed, 06-Oct-2021 15:17:27 GMT
+Date: Thu, 07 Oct 2021 15:17:27 GMT
+Cache-Control: no-cache
+Expires: Thu, 07 Oct 2021 15:17:27 GMT
+Date: Thu, 07 Oct 2021 15:17:27 GMT
+Pragma: no-cache
+X-FRAME-OPTIONS: SAMEORIGIN
+Location: https://192.168.1.21:30443/gateway/default/webhdfs/data/v1/webhdfs/v1/product_review_data/product_reviews.csv?_=AAAACAAAABAAAADQt3IMBq3UdvmyHwdvF0IDwKBXg1sjyhhX-6WDHt14yzMbCwsW8SoPlmF0xVau4BacJjw32JoyG5e9k7EhpOLIJs3Rjh2HJMjy1J7fhZHY60vboPLlX8U-6sEsegtGZ1-yPdMCKYe84JEaghBv89-JYnlcv0fNSouZDhbHISvV25pP6L-DTNqP70Q14Yn1sY-Nm6xgZq7umZBwFSZGJ4bZoOPBbaTRAKsOiV5ra4kEyFaJHM25OnIjW1R8BJrtEbm7Xn0FyicMVv_3h18l8aFd90LauY5fLgkNO3oxvZqasFF0ZT_AdiqYRQ
+Content-Type: application/octet-stream
+Content-Length: 0
+Connection: close
+
+HTTP/1.1 100 Continue
+
+HTTP/1.1 201 Created
+Date: Thu, 07 Oct 2021 15:17:27 GMT
+Set-Cookie: KNOXSESSIONID=node01nyhhax6drlq21eokpyszg80fp9.node0; Path=/gateway/default; Secure; HttpOnly
+Expires: Thu, 01 Jan 1970 00:00:00 GMT
+Set-Cookie: rememberMe=deleteMe; Path=/gateway/default; Max-Age=0; Expires=Wed, 06-Oct-2021 15:17:27 GMT
+Location: https://192.168.1.21:30443/gateway/default/webhdfs/v1/product_review_data/product_reviews.csv
+Access-Control-Allow-Origin: *
+Connection: close
+
+[root@master tmp]# curl -i -L -k -u root:P@ssw0rd -X PUT "https://192.168.1.21:30443/gateway/default/webhdfs/v1/partner_customers/customers.csv?op=create&overwrite=true" -H "Content-Type: application/octet-stream" -T "customers.csv"
+HTTP/1.1 307 Temporary Redirect
+Date: Thu, 07 Oct 2021 15:19:05 GMT
+Set-Cookie: KNOXSESSIONID=node0329jv2vrg4jvujqvred89p2e10.node0; Path=/gateway/default; Secure; HttpOnly
+Expires: Thu, 01 Jan 1970 00:00:00 GMT
+Set-Cookie: rememberMe=deleteMe; Path=/gateway/default; Max-Age=0; Expires=Wed, 06-Oct-2021 15:19:05 GMT
+Date: Thu, 07 Oct 2021 15:19:05 GMT
+Cache-Control: no-cache
+Expires: Thu, 07 Oct 2021 15:19:05 GMT
+Date: Thu, 07 Oct 2021 15:19:05 GMT
+Pragma: no-cache
+X-FRAME-OPTIONS: SAMEORIGIN
+Location: https://192.168.1.21:30443/gateway/default/webhdfs/data/v1/webhdfs/v1/partner_customers/customers.csv?_=AAAACAAAABAAAADQNXHPF65EN1-742ureA9U97iwhWUwLbdD0QTKCNYod-9l3HirlaJ5ZzMfqymzafgHqBu-udYQYf2U36qG0npH1y3brKwYiduGzyfPg7Z2vB8bg8NEC5UcJA73aIE5W9HfDsIFUnC9Rlas_nJ6gezu08almkVshcV6Yh69nQsPA4dlBC-wlfENZ7qwEHpV6rTDXf3IYDlw2yMMiStjGQnZSBL4WSe1Ku3l-s5b6FSANzIMJt2qJJevwHb-eV_t8Xa5jWWv7mad8F8KOrjopaBqLdNf4ldoPGVuaN_yPsCFH_7USM9kxihGlg
+Content-Type: application/octet-stream
+Content-Length: 0
+Connection: close
+
+HTTP/1.1 100 Continue
+
+HTTP/1.1 201 Created
+Date: Thu, 07 Oct 2021 15:19:05 GMT
+Set-Cookie: KNOXSESSIONID=node06nfqpnmsfjsvvyi8grli4jrl11.node0; Path=/gateway/default; Secure; HttpOnly
+Expires: Thu, 01 Jan 1970 00:00:00 GMT
+Set-Cookie: rememberMe=deleteMe; Path=/gateway/default; Max-Age=0; Expires=Wed, 06-Oct-2021 15:19:05 GMT
+Location: https://192.168.1.21:30443/gateway/default/webhdfs/v1/partner_customers/customers.csv
+Access-Control-Allow-Origin: *
+Connection: close
+
+[root@master tmp]# curl -i -L -k -u root:P@ssw0rd -X PUT "https://192.168.1.21:30443/gateway/default/webhdfs/v1/partner_products/products.csv?op=create&overwrite=true" -H "Content-Type: application/octet-stream" -T "products.csv"
+HTTP/1.1 307 Temporary Redirect
+Date: Thu, 07 Oct 2021 15:20:09 GMT
+Set-Cookie: KNOXSESSIONID=node010gcdw9debzksdye2olb8jpmv12.node0; Path=/gateway/default; Secure; HttpOnly
+Expires: Thu, 01 Jan 1970 00:00:00 GMT
+Set-Cookie: rememberMe=deleteMe; Path=/gateway/default; Max-Age=0; Expires=Wed, 06-Oct-2021 15:20:09 GMT
+Date: Thu, 07 Oct 2021 15:20:09 GMT
+Cache-Control: no-cache
+Expires: Thu, 07 Oct 2021 15:20:09 GMT
+Date: Thu, 07 Oct 2021 15:20:09 GMT
+Pragma: no-cache
+X-FRAME-OPTIONS: SAMEORIGIN
+Location: https://192.168.1.21:30443/gateway/default/webhdfs/data/v1/webhdfs/v1/partner_products/products.csv?_=AAAACAAAABAAAADQQ9O9OOFUa0iqf32VM4rTaH0YCaTV80Guj_Uzup2z4o0rE7_XWi2eTykmWBPR27WB5RyuxWt8bK2XPzjCGGj5-468a1vlY-I21S0l2cbDxHtBceghJjsUMbLsWN-NV8BDpVY1EnQOyKFRId9QVtthM24NAfpaD7w1q-RiE8Cc4Xe6Db2Vwb4vVVIjETLNadz8gXgi-sn-FS7AMxuJkJGrDLwlsJAW-IdATperBqpvkfz4vS9fBbJZq2rtCKC9-tDOitojneHM4nKWGxZMLJPeWfizIDqXdcygBTtdQMJO7rSabyfc4gkmSw
+Content-Type: application/octet-stream
+Content-Length: 0
+Connection: close
+
+HTTP/1.1 100 Continue
+
+HTTP/1.1 201 Created
+Date: Thu, 07 Oct 2021 15:20:09 GMT
+Set-Cookie: KNOXSESSIONID=node014kqanhsjlj9q19kig3hdsbhum13.node0; Path=/gateway/default; Secure; HttpOnly
+Expires: Thu, 01 Jan 1970 00:00:00 GMT
+Set-Cookie: rememberMe=deleteMe; Path=/gateway/default; Max-Age=0; Expires=Wed, 06-Oct-2021 15:20:09 GMT
+Location: https://192.168.1.21:30443/gateway/default/webhdfs/v1/partner_products/products.csv
+Access-Control-Allow-Origin: *
+Connection: close
+
+[root@master tmp]# curl -i -L -k -u root:P@ssw0rd -X PUT "https://192.168.1.21:30443/gateway/default/webhdfs/v1/web_logs/web_clickstreams.csv?op=create&overwrite=true" -H "Content-Type: application/octet-stream" -T "web_clickstreams.csv"
+HTTP/1.1 307 Temporary Redirect
+Date: Thu, 07 Oct 2021 15:21:06 GMT
+Set-Cookie: KNOXSESSIONID=node01pbyx8fjq7q73jwwx27s32dfc14.node0; Path=/gateway/default; Secure; HttpOnly
+Expires: Thu, 01 Jan 1970 00:00:00 GMT
+Set-Cookie: rememberMe=deleteMe; Path=/gateway/default; Max-Age=0; Expires=Wed, 06-Oct-2021 15:21:06 GMT
+Date: Thu, 07 Oct 2021 15:21:06 GMT
+Cache-Control: no-cache
+Expires: Thu, 07 Oct 2021 15:21:06 GMT
+Date: Thu, 07 Oct 2021 15:21:06 GMT
+Pragma: no-cache
+X-FRAME-OPTIONS: SAMEORIGIN
+Location: https://192.168.1.21:30443/gateway/default/webhdfs/data/v1/webhdfs/v1/web_logs/web_clickstreams.csv?_=AAAACAAAABAAAADQOHHWritW0CUVmd6r0MjxyV1tYVLJgL_pAeOZe6fM-LBlT1DAiVZMsgsj7zFtN_SJh2jcgYvCuv9N3zh5QEkyU9TcHiBgk_XOh5HNnKKqU2JtmHglcLujYpKI4if0BGajHBRw5P-8eeC2r_otfaBoWGmjE0pFjHGgKCr-7TvZ2ag1LUYCNLUFKvZjK8zSR3XTSIr1iYZlnI9IIaHPaT8a2zxHjbCLW96H4_QyMGvWjHqIEnklNwUoLSt8dur9lq2yHYkLtRMofnfWvZwfD8EpCh9tFODAi9FkA1yyUvomn92Mdtg5jmzmRQ
+Content-Type: application/octet-stream
+Content-Length: 0
+Connection: close
+
+HTTP/1.1 100 Continue
+
+HTTP/1.1 201 Created
+Date: Thu, 07 Oct 2021 15:21:06 GMT
+Set-Cookie: KNOXSESSIONID=node0qclib0monnwyq8dr8wrmij7415.node0; Path=/gateway/default; Secure; HttpOnly
+Expires: Thu, 01 Jan 1970 00:00:00 GMT
+Set-Cookie: rememberMe=deleteMe; Path=/gateway/default; Max-Age=0; Expires=Wed, 06-Oct-2021 15:21:06 GMT
+Location: https://192.168.1.21:30443/gateway/default/webhdfs/v1/web_logs/web_clickstreams.csv
+Access-Control-Allow-Origin: *
+Connection: close
+
+[root@master tmp]#
+
 
 #BDC offline deployments
 
@@ -1748,3 +2371,37 @@ packages-microsoft-com-prod                                                     
 Last metadata expiration check: 0:00:19 ago on Fri 25 Jun 2021 11:52:48 PM EDT.
 Available Packages
 azdata-cli.x86_64                                                  20.3.5-1.el7                                                   packages-microsoft-com-prod
+
+6)BDC deploy issue
+metricsdc-xxx pods continus crash-->error-->running
+
+mssql-cluster    metricsdc-gx5w6                              0/1     CrashLoopBackOff    3 (17s ago)     7m10s
+mssql-cluster    metricsdc-qjwp7                              0/1     Error               3 (113s ago)    7m10s
+mssql-cluster    metricsdc-qjwp7                              0/1     CrashLoopBackOff    3 (15s ago)     7m24s
+mssql-cluster    metricsdc-gx5w6                              1/1     Running             4 (50s ago)     7m43s
+mssql-cluster    metricsdc-qjwp7                              1/1     Running             4 (45s ago)     7m54s
+mssql-cluster    metricsdc-v9tnk                              0/1     Error               3 (115s ago)    8m13s
+mssql-cluster    metricsdc-v9tnk                              0/1     CrashLoopBackOff    3 (12s ago)     8m25s
+mssql-cluster    metricsdc-v9tnk                              1/1     Running             4 (51s ago)     9m4s
+
+[root@master ~]# kubectl logs -f metricsdc-v9tnk
+2021/10/05 16:12:09.563521 [telegraf:stderr] 2021/10/05 16:10:45 [LAUNCH] Starting to run the process "telegraf"
+2021/10/05 16:12:09.563536 [telegraf:stderr] cat: /var/run/secrets/kubernetes.io/serviceaccount/token: Permission denied
+2021/10/05 16:12:09.563550 [telegraf:stderr] 2021/10/05 16:10:45 [LAUNCH] The process "telegraf" exists and returns error: The process exited with code '1' and error: exit status 1
+2021/10/05 16:12:09.563561 [telegraf:stderr] 2021/10/05 16:10:45 [LAUNCH] Starting to force stop process "telegraf"
+2021/10/05 16:12:09.563580 [telegraf:stderr] 2021/10/05 16:10:45 The process launcher "telegraf" exited: Failed to force stop the process "telegraf": no such process
+2021/10/05 16:12:09.563618 [telegraf:stderr] 2021/10/05 16:10:46 [LAUNCH] Starting to run the process "telegraf"
+2021/10/05 16:12:09.563637 [telegraf:stderr] cat: /var/run/secrets/kubernetes.io/serviceaccount/token: Permission denied
+2021/10/05 16:12:09.563647 [telegraf:stderr] 2021/10/05 16:10:46 [LAUNCH] The process "telegraf" exists and returns error: The process exited with code '1' and error: exit status 1
+2021/10/05 16:12:09.563657 [telegraf:stderr] 2021/10/05 16:10:46 [LAUNCH] Starting to force stop process "telegraf"
+2021/10/05 16:12:09.563674 [telegraf:stderr] 2021/10/05 16:10:46 The process launcher "telegraf" exited: Failed to force stop the process "telegraf": no such process
+
+ssh node1 tail -f /var/log/message
+Oct  5 12:16:20 node1 kubelet[1185]: I1005 12:16:20.652454    1185 kubelet_pods.go:897] "Unable to retrieve pull secret, the image pull may not succeed." pod="mssql-cluster/control-vcz6w" secret="" err="secret \"mssql-private-registry\" not found"
+
+Password doesn't meet the password complexity requirement. For more information: https://docs.microsoft.com/sql/relational-databases/security/password-policy
+
+-->Fix
+image use CU13 fix issue!!!, CU12 image have this issue!
+
+
