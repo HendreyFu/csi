@@ -1242,7 +1242,15 @@ Python (Linux) 3.6.8 (default, Mar 19 2021, 05:13:41)
 
 Python location '/usr/bin/python3'
 
-
+BDC Support matrix, Release history:
+https://docs.microsoft.com/en-us/sql/big-data-cluster/release-notes-big-data-cluster?view=sql-server-ver15
+Release	Container OS	   Kubernetes API	   Runtime	         Data Storage	   Log Storage
+CU13	   Ubuntu 20.04 LTS	1.20	            containerd 1.4.6
+                                             CRI-O 1.20.0	   Block only	      Block only
+CU12	   Ubuntu 20.04 LTS	1.20	            containerd 1.4.3
+                                             docker 20.10.2
+                                             CRI-O 1.20.0	   Block only	      Block only
+                                             
 [stack@master ~]$ azdata bdc config list
 The privacy statement can be viewed at:
 https://go.microsoft.com/fwlink/?LinkId=853010
@@ -1696,6 +1704,11 @@ Azure Data Studio (launch GUI console, SERVERS: connect to bdc "xxxip,31433  SQL
 https://docs.microsoft.com/en-us/sql/big-data-cluster/connect-to-big-data-cluster?view=sql-server-ver15
 in GUI NOTEBOOKS: open .ipynb to test scripts... (Note: github .ipynb need use raw format to download!)
 (wget https://github.com/microsoft/sqlworkshops-bdc/raw/de44633dfc01db08cef36084a8a2975b6fa5befa/SQL2019BDC/notebooks/bdc_tutorial_01.ipynb -O bdc_tutorial_01.ipynb)
+
+
+#upgrade BDC
+azdata bdc upgrade -n mssql-cluster -t 2019-CUxx-ubuntu-xx -r mcr.microsoft.com/mssql/bdc
+
 
 #delete BDC
 [root@master ~]# azdata bdc delete --name mssql-cluster --force
