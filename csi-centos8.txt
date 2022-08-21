@@ -242,7 +242,7 @@ Environment="KUBELET_KUBECONFIG_ARGS=...  --kubeconfig=/etc/kubernetes/kubelet.c
   144  echo "export KUBECONFIG=/etc/kubernetes/admin.conf" >> ~/.bash_profile
   145  echo "source <(kubectl completion bash)" >> ~/.bash_profile
   146  source ~/.bash_profile
-  147  kubectl apply -f https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml
+  147  kubectl apply -f https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml   //after apply CNI plugin, worker will run coredns & flannel pods, then nodes will change to ready status!!
   148  kubectl get cs
   149  vi ~/.vimrc
   150  vim /etc/kubernetes/manifests/kube-controller-manager.yaml     //delete --port=0 line!!
