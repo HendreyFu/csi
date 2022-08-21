@@ -23,6 +23,14 @@ New Features/Changes
 -Added the ability to configure nasName per Storage Class
 -Refactored configuration files to use more generic naming
 
+====CSI v1.5.0 -> Release v2.3.0 06/22/2022 update
+-Support Volume Group Snapshots.
+-Removed beta volumesnapshotclass sample files.
+-Support Configurable Volume Attributes.
+-Added support for Kubernetes 1.24.
+-Added support for OpenShift 4.10.
+-Added support for NVMe/FC protocol.
+
 Centos 8.4 or RHEL 8.4
 Note:
 Kubernetes cannot work with Podman (which is now the default container engine for both RHEL and CentOS).
