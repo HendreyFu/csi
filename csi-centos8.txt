@@ -251,6 +251,16 @@ Environment="KUBELET_KUBECONFIG_ARGS=...  --kubeconfig=/etc/kubernetes/kubelet.c
   153  kubectl get cs
   154  kubectl cluster-info
   155  kubectl get nodes
+  
+  #kubeadm reset
+  master: kubeadm reset
+          rm -rf $HOME/.kube/config
+  worker: system stop kubelet
+          rm -rf /etc/kubernetes
+  for i in {node1,node2,node3}; do ssh $i systemctl stop kubelet; ssh $i rm -rf /etc/kubernetes/; ssh $i rm -rf /var/lib/kubelet/ ; done
+  kubeadm reset
+  rm -rf $HOME/.kube/config
+  
 [root@master ~]# kubectl get nodes
 NAME           STATUS   ROLES                  AGE     VERSION
 master.local   Ready    control-plane,master   12m   v1.21.2
@@ -2431,5 +2441,25 @@ Password doesn't meet the password complexity requirement. For more information:
 
 -->Fix
 image use CU13 fix issue!!!, CU12 image have this issue!
+
+
+7)kubernetes 1.24 install issue
+[root@master1 ~]# kubeadm init   --kubernetes-version=v1.24.2   --pod-network-cidr=10.96.0.0/12  --image-repository=registry.aliyuncs.com/google_containers/ --apiserver-advertise-address=10.211.55.4 --kubernetes-version=v1.24.2
+[init] Using Kubernetes version: v1.24.2
+[preflight] Running pre-flight checks
+error execution phase preflight: [preflight] Some fatal errors occurred:
+        [ERROR CRI]: container runtime is not running: output: time="2022-06-18T11:22:31+08:00" level=fatal msg="unable to determine runtime API version: rpc error: code = Unavailable desc = connection error: desc = \"transport: Error while dialing dial unix /var/run/containerd/containerd.sock: connect: no such file or directory\""
+, error: exit status 1
+        [ERROR FileContent--proc-sys-net-bridge-bridge-nf-call-iptables]: /proc/sys/net/bridge/bridge-nf-call-iptables contents are not set to 1
+[preflight] If you know what you are doing, you can make a check non-fatal with `--ignore-preflight-errors=...`
+To see the stack trace of this error execute with --v=5 or higher
+
+-->Fix 
+https://edulab.emc.com/emcedu/console/lab/PWRSTORE-Fln-Pod02-Student/NEE-0_98686651676910/vm-56518151
+
+rm /etc/containerd/config.toml      //all node(master and workers) need delte this config!!
+systemctl restart containerd
+
+re-run: kubeadm init xxx
 
 
