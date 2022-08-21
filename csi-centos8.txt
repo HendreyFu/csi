@@ -65,6 +65,17 @@ nameserver 192.168.1.50
    52  yum makecache
    53  yum list docker-ce | sort -r
    54  yum -y install docker-ce
+   
+   #https://upcloud.com/resources/tutorials/install-kubernetes-cluster-centos-8
+   echo '{
+     "exec-opts": ["native.cgroupdriver=systemd"]
+   }' > /etc/docker/daemon.json
+   cat /etc/docker/daemon.json
+   {
+     "exec-opts": ["native.cgroupdriver=systemd"]
+   }
+   systemctl restart docker
+   
    55  systemctl enable --now docker
    57  systemctl status docker
    58  docker --version
@@ -220,7 +231,7 @@ Environment="KUBELET_KUBECONFIG_ARGS=...  --kubeconfig=/etc/kubernetes/kubelet.c
 
   138  kubeadm init --pod-network-cidr=10.244.0.0/16 --apiserver-advertise-address=192.168.1.20
   139  for i in {node1,node2,node3}; do ssh $i kubeadm join 192.168.1.20:6443 --token tkmf3y.x3rzt3m6rtxhwc02 --discovery-token-ca-cert-hash sha256:9823a831616f82a964ae1116b6c6dfeac5c83e865a7205230adc8a0828e18fb8 ; done
-  140  systemctl status kubelet
+  140  systemctl status kubelet           //no need start service before run "kubeadm init"!!!
        for i in {master,node1,node2,node3}; do ssh $i systemctl enable kubelet ; done 
   141  netstat -ntpl
   142  kubectl get nodes
