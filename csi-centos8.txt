@@ -214,7 +214,7 @@ for i in {master,node1,node2,node3}; do ssh $i yum install -y kubelet kubeadm ku
 Don't change docker.service to "MountFlags=shared" in /etc/systemd/system/multi-user.target.wants/docker.service, it will cause Centos 8 docker failed to start!!!
 
 [root@master ~]# for i in {master,node1,node2,node3}; do ssh $i kubeadm config images pull ; done
-[root@master csi-powerstore]# docker images | grep k8s
+[root@master ~]# docker images | grep k8s
 k8s.gcr.io/kube-apiserver            v1.21.2    106ff58d4308   9 days ago      126MB
 k8s.gcr.io/kube-proxy                v1.21.2    a6ebd1c1ad98   9 days ago      131MB
 k8s.gcr.io/kube-scheduler            v1.21.2    f917b8c8f55b   9 days ago      50.6MB
@@ -229,9 +229,11 @@ nmcli conn show
 nmcli connection modify "Wired connection 1" con-name ens224 ifname ens224
 nmcli conn mod ens224 ipv4.address 192.168.2.220/24 ipv4.method static connection.autoconnect yes && nmcli con up ens224 && nmcli con show
 
-#change all node cgroup-driver=cgroupfs
+[
+#change all node cgroup-driver=cgroupfs for kubernetes 1.21 version!!
 vi /usr/lib/systemd/system/kubelet.service.d/10-kubeadm.conf
 Environment="KUBELET_KUBECONFIG_ARGS=...  --kubeconfig=/etc/kubernetes/kubelet.conf --cgroup-driver=cgroupfs"
+]
 
   138  kubeadm init --pod-network-cidr=10.244.0.0/16 --apiserver-advertise-address=192.168.1.20
   139  for i in {node1,node2,node3}; do ssh $i kubeadm join 192.168.1.20:6443 --token tkmf3y.x3rzt3m6rtxhwc02 --discovery-token-ca-cert-hash sha256:9823a831616f82a964ae1116b6c6dfeac5c83e865a7205230adc8a0828e18fb8 ; done
@@ -245,7 +247,10 @@ Environment="KUBELET_KUBECONFIG_ARGS=...  --kubeconfig=/etc/kubernetes/kubelet.c
   147  kubectl apply -f https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml   //after apply CNI plugin, worker will run coredns & flannel pods, then nodes will change to ready status!!
   148  kubectl get cs
   149  vi ~/.vimrc
-  150  vim /etc/kubernetes/manifests/kube-controller-manager.yaml     //delete --port=0 line!!
+  syntax on
+  autocmd FileType yaml setlocal ai ts=2 sw=2 et nu cuc cul
+  autocmd FileType yaml colo desert
+  150  vim /etc/kubernetes/manifests/kube-controller-manager.yaml     //kubernetes 1.21 version delete --port=0 line!!
   151  vim /etc/kubernetes/manifests/kube-scheduler.yaml
   152  systemctl restart kubelet
   153  kubectl get cs
@@ -2455,6 +2460,7 @@ error execution phase preflight: [preflight] Some fatal errors occurred:
 To see the stack trace of this error execute with --v=5 or higher
 
 -->Fix 
+https://stackoverflow.com/questions/72504257/i-encountered-when-executing-kubeadm-init-error-issue
 https://github.com/containerd/containerd/issues/4581
 
 rm /etc/containerd/config.toml      //all node(master and workers) need delte this config!!
