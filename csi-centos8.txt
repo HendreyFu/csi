@@ -2455,7 +2455,7 @@ error execution phase preflight: [preflight] Some fatal errors occurred:
 To see the stack trace of this error execute with --v=5 or higher
 
 -->Fix 
-https://edulab.emc.com/emcedu/console/lab/PWRSTORE-Fln-Pod02-Student/NEE-0_98686651676910/vm-56518151
+https://github.com/containerd/containerd/issues/4581
 
 rm /etc/containerd/config.toml      //all node(master and workers) need delte this config!!
 systemctl restart containerd
