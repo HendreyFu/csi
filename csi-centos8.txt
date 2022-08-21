@@ -2459,21 +2459,20 @@ image use CU13 fix issue!!!, CU12 image have this issue!
 
 
 7)kubernetes 1.24 install issue
-[root@master1 ~]# kubeadm init   --kubernetes-version=v1.24.2   --pod-network-cidr=10.96.0.0/12  --image-repository=registry.aliyuncs.com/google_containers/ --apiserver-advertise-address=10.211.55.4 --kubernetes-version=v1.24.2
+[root@master1 ~]# kubeadm init   --kubernetes-version=v1.24.2   --pod-network-cidr=10.244.0.0/16  --image-repository=registry.aliyuncs.com/google_containers/ --apiserver-advertise-address=192.168.1.20
 [init] Using Kubernetes version: v1.24.2
 [preflight] Running pre-flight checks
 error execution phase preflight: [preflight] Some fatal errors occurred:
-        [ERROR CRI]: container runtime is not running: output: time="2022-06-18T11:22:31+08:00" level=fatal msg="unable to determine runtime API version: rpc error: code = Unavailable desc = connection error: desc = \"transport: Error while dialing dial unix /var/run/containerd/containerd.sock: connect: no such file or directory\""
+[ERROR CRI]: container runtime is not running: output: E0605 10:35:34.973561   12491 remote_runtime.go:925] "Status from runtime service failed" err="rpc error: code = Unimplemented desc = unknown service runtime.v1alpha2.RuntimeService"
+time="2022-06-05T10:35:34+09:00" level=fatal msg="getting status of runtime: rpc error: code = Unimplemented desc = unknown service runtime.v1alpha2.RuntimeService"
 , error: exit status 1
-        [ERROR FileContent--proc-sys-net-bridge-bridge-nf-call-iptables]: /proc/sys/net/bridge/bridge-nf-call-iptables contents are not set to 1
-[preflight] If you know what you are doing, you can make a check non-fatal with `--ignore-preflight-errors=...`
 To see the stack trace of this error execute with --v=5 or higher
 
 -->Fix 
 https://stackoverflow.com/questions/72504257/i-encountered-when-executing-kubeadm-init-error-issue
 https://github.com/containerd/containerd/issues/4581
 
-rm /etc/containerd/config.toml      //all node(master and workers) need delte this config!!
+rm /etc/containerd/config.toml      //all node(master and workers) need delete this config!!
 systemctl restart containerd
 
 re-run: kubeadm init xxx
