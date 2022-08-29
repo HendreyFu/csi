@@ -71,7 +71,7 @@ net.ipv4.ip_forward = 1
 nameserver 192.168.1.50
 
 #install docker on master
-   45  yum install -y yum-utils device-mapper-persistent-data lvm2 bash-completion git vim net-tools wget iproute-tc
+   45  yum install -y yum-utils device-mapper-persistent-data lvm2 bash-completion git vim net-tools wget iproute-tc jq
    49  yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
    50  ls /etc/yum.repos.d/
    52  yum makecache
@@ -465,7 +465,7 @@ data:
   }
 ]
 
-[root@master csi-powerstore]# vim helm/config.yaml
+[root@master csi-powerstore]# vim helm/config.yaml             //create config.yaml and secret.yaml in helm directory! or can copy samples/secret/secret.yaml to helm directory!
 [root@master csi-powerstore]# cat helm/config.yaml
 arrays:
   - endpoint: "https://192.168.1.40/api/rest"     # full URL path to the PowerStore API
@@ -488,7 +488,7 @@ data:
   config: CONFIG_YAML
 
 #csi > v1.4.0 storageclass use arrayID!!
-[root@master csi-powerstore]# cat helm/samples/storageclass/powerstore-xfs.yaml
+[root@master csi-powerstore]# cat samples/storageclass/powerstore-xfs.yaml
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
@@ -498,7 +498,7 @@ reclaimPolicy: Delete
 allowVolumeExpansion: true
 volumeBindingMode: Immediate
 parameters:
-  arrayID: "PS04e694d0c442"
+  arrayID: "PS7d3c8339f256"
   FsType: xfs
 
 #csi v1.3.0 storageclass use arrayIP!!
