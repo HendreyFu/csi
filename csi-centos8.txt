@@ -1994,8 +1994,20 @@ tcp6       0      0 :::22                   :::*                    LISTEN      
 [root@node1 ~]#
 
 azdata bdc endpoint list -e sql-server-master
-Azure Data Studio (launch GUI console, SERVERS: connect to bdc "xxxip,31433  SQL SERVER BIG DATA CLUSTERS: https://192.168.1.21:30080)
+Azure Data Studio (launch GUI console, SERVERS: connect to bdc "xxxip,31433", use admin to login then enabel sa account;  SQL SERVER BIG DATA CLUSTERS: https://192.168.1.21:30080)
 https://docs.microsoft.com/en-us/sql/big-data-cluster/connect-to-big-data-cluster?view=sql-server-ver15
+By default, the user name SA is disabled during big data cluster deployment!!
+need set AZDATA_USERNAME and AZDATA_PASSWORD environment when install!!
+or enable sa:  //https://nielsberglund.com/2019/12/23/how-to-deploy-sql-server-2019-big-data-cluster-using-azure-data-studio/
+[
+ USE master;
+ GO
+ ALTER LOGIN sa WITH PASSWORD=N'P@ssw0rd!'
+ GO
+ ALTER LOGIN sa ENABLE;
+ GO
+]
+
 in GUI NOTEBOOKS: open .ipynb to test scripts... (Note: github .ipynb need use raw format to download!)
 (wget https://github.com/microsoft/sqlworkshops-bdc/raw/de44633dfc01db08cef36084a8a2975b6fa5befa/SQL2019BDC/notebooks/bdc_tutorial_01.ipynb -O bdc_tutorial_01.ipynb)
 
