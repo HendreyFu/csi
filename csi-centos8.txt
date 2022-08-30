@@ -1663,7 +1663,7 @@ Cluster 'mssql-cluster' deployed successfully.
 
 [root@master tmp]# kubectl get pods -n mssql-cluster
 [root@master tmp]# kubectl get pvc -n mssql-cluster -L app,plane,role,type
-
+[root@master tmp]# kubectl config set-context --current --namespace mssql-cluster
 [root@master tmp]# kubectl get pods
 NAME              READY   STATUS    RESTARTS   AGE
 appproxy-hcmw6    2/2     Running   0          28m
@@ -2007,7 +2007,6 @@ or enable sa:  //https://nielsberglund.com/2019/12/23/how-to-deploy-sql-server-2
  ALTER LOGIN sa ENABLE;
  GO
 ]
-
 in GUI NOTEBOOKS: open .ipynb to test scripts... (Note: github .ipynb need use raw format to download!)
 (wget https://github.com/microsoft/sqlworkshops-bdc/raw/de44633dfc01db08cef36084a8a2975b6fa5befa/SQL2019BDC/notebooks/bdc_tutorial_01.ipynb -O bdc_tutorial_01.ipynb)
 
@@ -2060,7 +2059,6 @@ https://aka.ms/bdc-samples
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
 100  568M  100  568M    0     0  11.2M      0  0:00:50  0:00:50 --:--:-- 12.8M
-[root@master tmp]# curl "https://sabwoody.blob.core.windows.net/backups/WideWorldImporters.bak" -o c:\temp\WWI.bak^C
 [root@master tmp]# curl "https://sabwoody.blob.core.windows.net/backups/AdventureWorks.bak" -o AdventureWorks.bak
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
@@ -2085,7 +2083,7 @@ https://aka.ms/bdc-samples
 [root@master tmp]# kubectl cp AdventureWorksDW.bak master-0:/var/opt/mssql/data -c mssql-server -n mssql-cluster
 [root@master tmp]#
 
-[root@master tmp]# kubectl exec -it master-0 bash
+[root@master tmp]# kubectl exec -it master-0 -n mssql-cluster bash
 kubectl exec [POD] [COMMAND] is DEPRECATED and will be removed in a future version. Use kubectl exec [POD] -- [COMMAND] instead.
 Defaulted container "mssql-server" out of: mssql-server, collectd, fluentbit
 To run a command as administrator (user "root"), use "sudo <command>".
@@ -2125,7 +2123,8 @@ total 1.9G
 -rw-rw----. 1 mssql mssql 8.0M Oct  7 14:09 templog.ldf
 agent@master-0:/$
 
-[root@master tmp]# curl -i -L -k -u root:P@ssw0rd -X PUT "https://192.168.1.21:30443/gateway/default/webhdfs/v1/product_review_data?op=MKDIRS"            HTTP/1.1 200 OK
+[root@master tmp]# curl -i -L -k -u root:P@ssw0rd -X PUT "https://192.168.1.21:30443/gateway/default/webhdfs/v1/product_review_data?op=MKDIRS"
+HTTP/1.1 200 OK
 Date: Thu, 07 Oct 2021 15:04:09 GMT
 Set-Cookie: KNOXSESSIONID=node01o9fbsz1gsbwnx7qsotfo3aqh4.node0; Path=/gateway/default; Secure; HttpOnly
 Expires: Thu, 01 Jan 1970 00:00:00 GMT
