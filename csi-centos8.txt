@@ -1626,6 +1626,13 @@ Do you accept the license terms? (y/n): y
 [root@master tmp]# ls custom/
 bdc.json  control.json
 [root@master tmp]# vi custom/control.json
+[
+#Optional for > SQL Server 2019 CU 5.
+https://docs.microsoft.com/en-us/sql/big-data-cluster/deployment-guidance?view=sql-server-ver15
+export AZDATA_USERNAME=admin
+export AZDATA_PASSWORD=P@ssw0rd!
+export ACCEPT_EULA=yes
+]
 [root@master tmp]# azdata bdc create --config-profile custom --accept-eula yes
 The privacy statement can be viewed at:
 https://go.microsoft.com/fwlink/?LinkId=853010
