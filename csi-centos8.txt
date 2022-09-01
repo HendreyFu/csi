@@ -2123,7 +2123,9 @@ total 1.9G
 -rw-rw----. 1 mssql mssql 8.0M Oct  7 14:09 templog.ldf
 agent@master-0:/$
 
-[root@master tmp]# curl -i -L -k -u root:P@ssw0rd -X PUT "https://192.168.1.21:30443/gateway/default/webhdfs/v1/product_review_data?op=MKDIRS"
+#use curl tools and BDC user admin/P@ssw0rd! to create directory and upload sample data, user is BDC create input name and password!!
+https://docs.microsoft.com/en-us/sql/big-data-cluster/data-ingestion-curl?view=sql-server-ver16
+[root@master tmp]# curl -i -L -k -u admin:P@ssw0rd! -X PUT "https://192.168.1.21:30443/gateway/default/webhdfs/v1/product_review_data?op=MKDIRS"
 HTTP/1.1 200 OK
 Date: Thu, 07 Oct 2021 15:04:09 GMT
 Set-Cookie: KNOXSESSIONID=node01o9fbsz1gsbwnx7qsotfo3aqh4.node0; Path=/gateway/default; Secure; HttpOnly
@@ -2140,7 +2142,7 @@ Transfer-Encoding: chunked
 
 {"boolean":true}
 
-[root@master tmp]# curl -i -L -k -u root:P@ssw0rd -X PUT "https://192.168.1.21:30443/gateway/default/webhdfs/v1/partner_customers?op=MKDIRS"
+[root@master tmp]# curl -i -L -k -u admin:P@ssw0rd! -X PUT "https://192.168.1.21:30443/gateway/default/webhdfs/v1/partner_customers?op=MKDIRS"
 HTTP/1.1 200 OK
 Date: Thu, 07 Oct 2021 15:08:16 GMT
 Set-Cookie: KNOXSESSIONID=node0sqjqndc25sep1utan49vpgcix5.node0; Path=/gateway/default; Secure; HttpOnly
@@ -2157,7 +2159,7 @@ Transfer-Encoding: chunked
 
 {"boolean":true}
 
-[root@master tmp]# curl -i -L -k -u root:P@ssw0rd -X PUT "https://192.168.1.21:30443/gateway/default/webhdfs/v1/partner_products?op=MKDIRS"
+[root@master tmp]# curl -i -L -k -u admin:P@ssw0rd! -X PUT "https://192.168.1.21:30443/gateway/default/webhdfs/v1/partner_products?op=MKDIRS"
 HTTP/1.1 200 OK
 Date: Thu, 07 Oct 2021 15:09:10 GMT
 Set-Cookie: KNOXSESSIONID=node0l0ydqmt4savi1uq7empniovgc6.node0; Path=/gateway/default; Secure; HttpOnly
@@ -2173,7 +2175,7 @@ Content-Type: application/json;charset=utf-8
 Transfer-Encoding: chunked
 
 {"boolean":true}[root@master tmp]#
-[root@master tmp]# curl -i -L -k -u root:P@ssw0rd -X PUT "https://192.168.1.21:30443/gateway/default/webhdfs/v1/web_logs?op=MKDIRS"
+[root@master tmp]# curl -i -L -k -u admin:P@ssw0rd! -X PUT "https://192.168.1.21:30443/gateway/default/webhdfs/v1/web_logs?op=MKDIRS"
 HTTP/1.1 200 OK
 Date: Thu, 07 Oct 2021 15:09:52 GMT
 Set-Cookie: KNOXSESSIONID=node01orbtr68f6us51eidpm4bpx0uj7.node0; Path=/gateway/default; Secure; HttpOnly
@@ -2226,7 +2228,7 @@ c  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
 -rw-r--r--. 1 root root  43K Oct  7 11:11 customers.csv
 -rw-r--r--. 1 root root  215 Oct  7 11:10 product_reviews.csv
 
-[root@master tmp]# curl -i -L -k -u root:P@ssw0rd -X PUT "https://192.168.1.21:30443/gateway/default/webhdfs/v1/product_review_data/product_reviews.csv?op=create&overwrite=true" -H "Content-Type: application/octet-stream" -T "product_reviews.csv"
+[root@master tmp]# curl -i -L -k -u admin:P@ssw0rd! -X PUT "https://192.168.1.21:30443/gateway/default/webhdfs/v1/product_review_data/product_reviews.csv?op=create&overwrite=true" -H "Content-Type: application/octet-stream" -T "product_reviews.csv"
 HTTP/1.1 307 Temporary Redirect
 Date: Thu, 07 Oct 2021 15:17:27 GMT
 Set-Cookie: KNOXSESSIONID=node012xa50nne37ekdgiwz00rbpxf8.node0; Path=/gateway/default; Secure; HttpOnly
@@ -2254,7 +2256,7 @@ Location: https://192.168.1.21:30443/gateway/default/webhdfs/v1/product_review_d
 Access-Control-Allow-Origin: *
 Connection: close
 
-[root@master tmp]# curl -i -L -k -u root:P@ssw0rd -X PUT "https://192.168.1.21:30443/gateway/default/webhdfs/v1/partner_customers/customers.csv?op=create&overwrite=true" -H "Content-Type: application/octet-stream" -T "customers.csv"
+[root@master tmp]# curl -i -L -k -u admin:P@ssw0rd! -X PUT "https://192.168.1.21:30443/gateway/default/webhdfs/v1/partner_customers/customers.csv?op=create&overwrite=true" -H "Content-Type: application/octet-stream" -T "customers.csv"
 HTTP/1.1 307 Temporary Redirect
 Date: Thu, 07 Oct 2021 15:19:05 GMT
 Set-Cookie: KNOXSESSIONID=node0329jv2vrg4jvujqvred89p2e10.node0; Path=/gateway/default; Secure; HttpOnly
@@ -2282,7 +2284,7 @@ Location: https://192.168.1.21:30443/gateway/default/webhdfs/v1/partner_customer
 Access-Control-Allow-Origin: *
 Connection: close
 
-[root@master tmp]# curl -i -L -k -u root:P@ssw0rd -X PUT "https://192.168.1.21:30443/gateway/default/webhdfs/v1/partner_products/products.csv?op=create&overwrite=true" -H "Content-Type: application/octet-stream" -T "products.csv"
+[root@master tmp]# curl -i -L -k -u admin:P@ssw0rd! -X PUT "https://192.168.1.21:30443/gateway/default/webhdfs/v1/partner_products/products.csv?op=create&overwrite=true" -H "Content-Type: application/octet-stream" -T "products.csv"
 HTTP/1.1 307 Temporary Redirect
 Date: Thu, 07 Oct 2021 15:20:09 GMT
 Set-Cookie: KNOXSESSIONID=node010gcdw9debzksdye2olb8jpmv12.node0; Path=/gateway/default; Secure; HttpOnly
@@ -2310,7 +2312,7 @@ Location: https://192.168.1.21:30443/gateway/default/webhdfs/v1/partner_products
 Access-Control-Allow-Origin: *
 Connection: close
 
-[root@master tmp]# curl -i -L -k -u root:P@ssw0rd -X PUT "https://192.168.1.21:30443/gateway/default/webhdfs/v1/web_logs/web_clickstreams.csv?op=create&overwrite=true" -H "Content-Type: application/octet-stream" -T "web_clickstreams.csv"
+[root@master tmp]# curl -i -L -k -u admin:P@ssw0rd! -X PUT "https://192.168.1.21:30443/gateway/default/webhdfs/v1/web_logs/web_clickstreams.csv?op=create&overwrite=true" -H "Content-Type: application/octet-stream" -T "web_clickstreams.csv"
 HTTP/1.1 307 Temporary Redirect
 Date: Thu, 07 Oct 2021 15:21:06 GMT
 Set-Cookie: KNOXSESSIONID=node01pbyx8fjq7q73jwwx27s32dfc14.node0; Path=/gateway/default; Secure; HttpOnly
