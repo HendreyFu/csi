@@ -2341,9 +2341,18 @@ Access-Control-Allow-Origin: *
 Connection: close
 
 [root@master tmp]#
+use Azure Data Studio GUI checck:
+Servers --> 192.168.1.22,31433 --> HDFS:
+  partner_customers	--> customers.csv
+  partner_products	--> products.csv
+  product_review_data   --> product_reviews.csv
+  web_logs		--> web_clickstreams.csv
+
+4 directory and sample data success upload!!!
 
 
 #BDC offline deployments
+
 
 #BDC upgrade
 azdata bdc upgrade -n mssql-cluster -t 2019-CU5-ubuntu-16.04 -r mcr.microsoft.com/mssql/bdc
