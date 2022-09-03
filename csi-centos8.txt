@@ -2533,7 +2533,6 @@ master.local:5000/mssql/bdc/mssql-dns            2019-CU17-ubuntu-20.04   5aaeb9
 mcr.microsoft.com/mssql/bdc/mssql-dns            2019-CU17-ubuntu-20.04   5aaeb94c4c45   4 weeks ago     916MB
 [root@master tmp]#
 
-
 https://docs.microsoft.com/en-us/sql/big-data-cluster/deploy-offline?view=sql-server-ver15
 [root@master tmp]# curl -o push-bdc-images-to-custom-private-repo.py "https://raw.githubusercontent.com/Microsoft/sql-server-samples/master/samples/features/sql-big-data-cluster/deployment/offline/push-bdc-images-to-custom-private-repo.py"
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
@@ -2543,7 +2542,97 @@ https://docs.microsoft.com/en-us/sql/big-data-cluster/deploy-offline?view=sql-se
 [root@master tmp]# python3 --version
 Python 3.6.8
 [root@master tmp]# python3 push-bdc-images-to-custom-private-repo.py          //push-bdc-images-to-custom-private-repo.py have issue can't download and push images!!!
-Provide Docker registry source - press ENTER for using `mcr.microsoft.com`:
+Provide Docker registry source - press ENTER for using `mcr.microsoft.com`:mcr.microsoft.com
+Provide Docker repository source - press ENTER for using `mssql/bdc`:mssql/bdc
+Provide Docker tag for the images at the source: 2019-CU17-ubuntu-20.04
+Provide Docker registry target:master.local:5000
+Provide Docker repository target:registry
+Provide Docker username for the target registry:root
+Provide Docker password for the target registry:
+Provide Docker tag for the images at the target: 2019-CU17-ubuntu-20.04
+Pulling images from source repository: mcr.microsoft.com/mssql/bdc
+"docker pull" requires exactly 1 argument.
+See 'docker pull --help'.
+
+Usage:  docker pull [OPTIONS] NAME[:TAG|@DIGEST]
+
+Pull an image or a repository from a registry
+Execute docker login to target registry:master.local:5000
+WARNING! Using --password via the CLI is insecure. Use --password-stdin.
+WARNING! Your password will be stored unencrypted in /root/.docker/config.json.
+Configure a credential helper to remove this warning. See
+https://docs.docker.com/engine/reference/commandline/login/#credentials-store
+
+Login Succeeded
+
+Tagging local images...
+"docker tag" requires exactly 2 arguments.
+See 'docker tag --help'.
+
+Usage:  docker tag SOURCE_IMAGE[:TAG] TARGET_IMAGE[:TAG]
+
+Create a tag TARGET_IMAGE that refers to SOURCE_IMAGE
+Push images to target Docker repository: master.local:5000/registry
+"docker push" requires exactly 1 argument.
+See 'docker push --help'.
+
+Usage:  docker push [OPTIONS] NAME[:TAG]
+
+Push an image or a repository to a registry
+Images are now pushed to the target repository.
+REPOSITORY                                       TAG        IMAGE ID       CREATED         SIZE
+k8s.gcr.io/kube-apiserver                        v1.24.4    6cab9d1bed1b   2 weeks ago     130MB
+k8s.gcr.io/kube-apiserver                        v1.23.10   9ca5fafbe8dc   2 weeks ago     135MB
+k8s.gcr.io/kube-controller-manager               v1.23.10   91a4a0d5de4e   2 weeks ago     125MB
+k8s.gcr.io/kube-scheduler                        v1.23.10   d5c0efb802d9   2 weeks ago     53.5MB
+k8s.gcr.io/kube-proxy                            v1.23.10   71b9bf9750e1   2 weeks ago     112MB
+registry                                         2          3a0f7b0a13ef   3 weeks ago     24.1MB
+master.local:5000/registry                       2          3a0f7b0a13ef   3 weeks ago     24.1MB
+rancher/mirrored-flannelcni-flannel              v0.19.1    252b2c3ee6c8   3 weeks ago     62.3MB
+dellemc/csi-powerstore                           v2.3.0     c620bd57fa1e   8 weeks ago     294MB
+rancher/mirrored-flannelcni-flannel-cni-plugin   v1.1.0     fcecffc7ad4a   3 months ago    8.09MB
+k8s.gcr.io/etcd                                  3.5.1-0    25f8c7f3da61   10 months ago   293MB
+k8s.gcr.io/coredns/coredns                       v1.8.6     a4ca41631cc7   10 months ago   46.8MB
+k8s.gcr.io/pause                                 3.6        6270bb605e12   12 months ago   683kB
+[root@master tmp]#
+
+#change code for debug push-bdc-images-to-custom-private-repo.py
+for image in images:
+     cmd += "docker pull " + SOURCE_DOCKER_REGISTRY + "/" + SOURCE_DOCKER_REPOSITORY + "/" + image + ":" + SOURCE_DOCKER_TAG +  " & "
+     print(SOURCE_DOCKER_REGISTRY)
+     print(cmd)
+cmd = cmd[:len(cmd)-3]
+execute_cmd(cmd)
+
+mcr.microsoft.com
+docker pull mcr.microsoft.com/mssql/bdc/mssql-app-service-proxy:latest & docker pull mcr.microsoft.com/mssql/bdc/mssql-control-watchdog:latest & docker       pull mcr.microsoft.com/mssql/bdc/mssql-controller:latest & docker pull mcr.microsoft.com/mssql/bdc/mssql-dns:latest & docker pull mcr.microsoft.com/mssq      l/bdc/mssql-hadoop,mssql-mleap-serving-runtime:latest & docker pull mcr.microsoft.com/mssql/bdc/mssql-mlserver-py-runtime:latest & docker pull mcr.micro      soft.com/mssql/bdc/mssql-mlserver-r-runtime:latest & docker pull mcr.microsoft.com/mssql/bdc/mssql-monitor-collectd:latest & docker pull mcr.microsoft.c      om/mssql/bdc/mssql-monitor-elasticsearch:latest & docker pull mcr.microsoft.com/mssql/bdc/mssql-monitor-fluentbit:latest & docker pull mcr.microsoft.com      /mssql/bdc/mssql-monitor-grafana:latest & docker pull mcr.microsoft.com/mssql/bdc/mssql-monitor-influxdb:latest & docker pull mcr.microsoft.com/mssql/bd      c/mssql-monitor-kibana:latest & docker pull mcr.microsoft.com/mssql/bdc/mssql-monitor-telegraf:latest & docker pull mcr.microsoft.com/mssql/bdc/mssql-se      curity-knox:latest & docker pull mcr.microsoft.com/mssql/bdc/mssql-security-support:latest & docker pull mcr.microsoft.com/mssql/bdc/mssql-server-contro      ller:latest & docker pull mcr.microsoft.com/mssql/bdc/mssql-server-data:latest & docker pull mcr.microsoft.com/mssql/bdc/mssql-ha-operator:latest & dock      er pull mcr.microsoft.com/mssql/bdc/mssql-ha-supervisor:latest & docker pull mcr.microsoft.com/mssql/bdc/mssql-service-proxy:latest &
+mcr.microsoft.com
+docker pull mcr.microsoft.com/mssql/bdc/mssql-app-service-proxy:latest & docker pull mcr.microsoft.com/mssql/bdc/mssql-control-watchdog:latest & docker       pull mcr.microsoft.com/mssql/bdc/mssql-controller:latest & docker pull mcr.microsoft.com/mssql/bdc/mssql-dns:latest & docker pull mcr.microsoft.com/mssq      l/bdc/mssql-hadoop,mssql-mleap-serving-runtime:latest & docker pull mcr.microsoft.com/mssql/bdc/mssql-mlserver-py-runtime:latest & docker pull mcr.micro      soft.com/mssql/bdc/mssql-mlserver-r-runtime:latest & docker pull mcr.microsoft.com/mssql/bdc/mssql-monitor-collectd:latest & docker pull mcr.microsoft.c      om/mssql/bdc/mssql-monitor-elasticsearch:latest & docker pull mcr.microsoft.com/mssql/bdc/mssql-monitor-fluentbit:latest & docker pull mcr.microsoft.com      /mssql/bdc/mssql-monitor-grafana:latest & docker pull mcr.microsoft.com/mssql/bdc/mssql-monitor-influxdb:latest & docker pull mcr.microsoft.com/mssql/bd      c/mssql-monitor-kibana:latest & docker pull mcr.microsoft.com/mssql/bdc/mssql-monitor-telegraf:latest & docker pull mcr.microsoft.com/mssql/bdc/mssql-se      curity-knox:latest & docker pull mcr.microsoft.com/mssql/bdc/mssql-security-support:latest & docker pull mcr.microsoft.com/mssql/bdc/mssql-server-contro      ller:latest & docker pull mcr.microsoft.com/mssql/bdc/mssql-server-data:latest & docker pull mcr.microsoft.com/mssql/bdc/mssql-ha-operator:latest & dock      er pull mcr.microsoft.com/mssql/bdc/mssql-ha-supervisor:latest & docker pull mcr.microsoft.com/mssql/bdc/mssql-service-proxy:latest & docker pull mcr.mi      crosoft.com/mssql/bdc/mssql-ssis-app-runtime:latest &
+"docker pull" requires exactly 1 argument.
+See 'docker pull --help'.
+
+Usage:  docker pull [OPTIONS] NAME[:TAG|@DIGEST]
+
+Pull an image or a repository from a registry
+Execute docker login to target registry:master:5000
+WARNING! Using --password via the CLI is insecure. Use --password-stdin.
+Error response from daemon: Get "https://master:5000/v2/": http: server gave HTTP response to HTTPS client
+
+Tagging local images...
+"docker tag" requires exactly 2 arguments.
+See 'docker tag --help'.
+
+Usage:  docker tag SOURCE_IMAGE[:TAG] TARGET_IMAGE[:TAG]
+
+Create a tag TARGET_IMAGE that refers to SOURCE_IMAGE
+Push images to target Docker repository: master:5000/mssql/bdc
+"docker push" requires exactly 1 argument.
+See 'docker push --help'.
+
+Usage:  docker push [OPTIONS] NAME[:TAG]
+
+Push an image or a repository to a registry
+Images are now pushed to the target repository.
 ...
 
 
