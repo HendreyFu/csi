@@ -1479,6 +1479,8 @@ Deploying SQL Server Big Data Clusters - Ben Weissman
 https://www.youtube.com/watch?v=H_HA4zteg6k
 Deploy Big Data Cluster
 https://infohub.delltechnologies.com/l/microsoft-sql-server-2019-big-data-cluster-on-dell-emc-vxrail/step-2-deploy-big-data-cluster
+Dell EMC PowerStore - SQL Server 2019 Big Data Clusters
+https://www.youtube.com/watch?v=Cu9D8lrWCpc
 
 Baremetal or VM hardware:
 VM hardware       Value
